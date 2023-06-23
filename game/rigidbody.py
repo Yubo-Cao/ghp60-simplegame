@@ -39,6 +39,9 @@ class RigidBody(Updatable):
         if self.gravity:
             self.apply_force((0, self.GRAVITY_CONSTANT * self.mass))
 
+    def __repr__(self):
+        return f"RigidBody({self.mass}, {self.decaying}, {self.gravity})"
+
 
 class RigidBodyRect(RigidBody, Renderable, Colliable):
     def __init__(self, rect: pg.Rect, *args, **kwargs):
@@ -66,6 +69,7 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
 
     @x.setter
     def x(self, value):
+        self.position = (value, self.position[1])
         self.rect.x = round(value)
 
     @property
@@ -74,4 +78,8 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
 
     @y.setter
     def y(self, value):
+        self.position = (self.position[0], value)
         self.rect.y = round(value)
+
+    def __repr__(self):
+        return f"RigidBodyRect({self.rect}, {self.mass}, {self.decaying}, {self.gravity})"

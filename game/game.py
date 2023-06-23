@@ -26,7 +26,7 @@ class Game:
         self.clock: pg.time.Clock
 
     def loop(self):
-        dt = self.clock.tick(self.FPS) / 10 # deciseconds
+        dt = self.clock.tick(self.FPS) / 1000 # deciseconds
         self.surface.fill(self.BACKGROUND_COLOR)
         self.updates.update(dt)
         self.collisions.update(dt)

@@ -8,12 +8,13 @@ class RigidBody(Updatable):
     GRAVITY_CONSTANT = 9.81
     ACCELERATION_DECAY = 0.05
 
-    def __init__(self, mass: float, decaying: bool = True):
+    def __init__(self, mass: float, decaying: bool = True, gravity: bool = True):
         self.mass = mass
         self.acceleration: Vec = (0, 0)
         self.velocity: Vec = (0, 0)
         self.position: Vec = (0, 0)
         self.decaying = decaying
+        self.gravity = gravity
 
     def apply_force(self, force: Vec):
         self.acceleration = (
@@ -35,7 +36,8 @@ class RigidBody(Updatable):
                 self.acceleration[0] * (1 - self.ACCELERATION_DECAY),
                 self.acceleration[1] * (1 - self.ACCELERATION_DECAY),
             )
-        self.apply_force((0, self.GRAVITY_CONSTANT * self.mass))
+        if self.gravity:
+            self.apply_force((0, self.GRAVITY_CONSTANT * self.mass))
 
 
 class RigidBodyRect(RigidBody, Renderable, Colliable):

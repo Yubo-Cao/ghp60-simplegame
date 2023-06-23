@@ -1,6 +1,7 @@
 from enum import Enum
 
 import pygame as pg
+
 from .interfaces import Collision, ObservableDescriptor, PlayInstance
 from .utils import invert_vector, load_im, move_vector
 

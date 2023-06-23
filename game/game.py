@@ -51,9 +51,3 @@ class Game:
         self.renders.remove(instance)
         self.updates.remove(instance)
         return instance
-
-
-if __name__ == "__main__":
-    with Game() as game:
-        while True:
-            game.loop()

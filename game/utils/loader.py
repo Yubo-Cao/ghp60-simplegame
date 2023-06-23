@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from . import pg
+import pygame as pg
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+DATA_DIR = Path(__file__).parent.parent.parent / "data"
 assert DATA_DIR.exists(), f"Data directory {DATA_DIR} does not exist"
 
 
@@ -24,4 +24,4 @@ def load_im(
         )
     color_key = image.get_at((0, 0)) if color_key == -1 else color_key
     image.set_colorkey(color_key)
-    return image.convert()
+    return image

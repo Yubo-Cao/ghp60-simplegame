@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import NamedTuple, Protocol
 
-from . import pg
+import pygame as pg
 from .updatable import Updatable
 
 

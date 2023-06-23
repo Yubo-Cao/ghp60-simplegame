@@ -20,7 +20,7 @@ class Observable(Protocol):
 T = TypeVar("T")
 
 
-class ObservableDescriptor(Generic[T], Observable):
+class ObservableDescriptor(Observable, Generic[T]):
     def __set_name__(self, owner, name: str) -> None:
         self.name = f"_observable_{name}"
         self.owner = owner

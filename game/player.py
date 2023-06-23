@@ -3,8 +3,8 @@ from enum import Enum
 import pygame as pg
 
 from .interfaces import Collision, ObservableDescriptor, PlayInstance
-from .utils import invert_vector, load_im, move_vector
 from .rigidbody import RigidBodyRect
+from .utils import invert_vector, load_im, move_vector
 
 
 class Direction(Enum):
@@ -25,8 +25,8 @@ class Player(pg.sprite.Sprite, PlayInstance):
         DIVE = 2
 
     def __init__(
-        self,
-        speed: float = 64,
+            self,
+            speed: float = 64,
     ) -> None:
         super().__init__()
         self.image = load_im("player.png", scale=48 / 2048)
@@ -62,6 +62,12 @@ class Player(pg.sprite.Sprite, PlayInstance):
             move_vector(collision.a.get_rect(), collision.b.get_rect(), vec)
         )
         self.__sync_rect()
+
+    def collide(self, other: "Colliable") -> bool:
+        return self.rect.colliderect(other.get_rect())
+
+    def get_rect(self) -> pg.Rect:
+        return self.rect
 
     def __sync_rect(self):
         self.rect.x = round(self.rb.x)

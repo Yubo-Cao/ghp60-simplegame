@@ -1,9 +1,11 @@
+from abc import abstractmethod
 from typing import Protocol
 
 import pygame as pg
 
 
 class Renderable(Protocol):
+    @abstractmethod
     def render(self, surface: pg.Surface) -> None:
         ...
 

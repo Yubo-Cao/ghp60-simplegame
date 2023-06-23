@@ -1,5 +1,6 @@
 import pygame as pg
-from .interfaces import Updatable, Renderable, Colliable
+
+from .interfaces import Colliable, Renderable, Updatable
 
 Vec = tuple[float, float]
 
@@ -82,4 +83,6 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
         self.rect.y = round(value)
 
     def __repr__(self):
-        return f"RigidBodyRect({self.rect}, {self.mass}, {self.decaying}, {self.gravity})"
+        return (
+            f"RigidBodyRect({self.rect}, {self.mass}, {self.decaying}, {self.gravity})"
+        )

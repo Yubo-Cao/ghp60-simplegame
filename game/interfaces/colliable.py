@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from collections.abc import Callable
 from typing import NamedTuple, Protocol
 
@@ -7,9 +8,11 @@ from .updatable import Updatable
 
 
 class Colliable(Protocol):
+    @abstractmethod
     def get_rect(self) -> pg.Rect:
         ...
 
+    @abstractmethod
     def collide(self, other: "Colliable") -> bool:
         ...
 

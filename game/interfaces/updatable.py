@@ -1,7 +1,9 @@
+from abc import abstractmethod
 from typing import Protocol
 
 
 class Updatable(Protocol):
+    @abstractmethod
     def update(self, dt: float) -> None:
         ...
 

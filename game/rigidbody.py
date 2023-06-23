@@ -51,11 +51,27 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
     def update(self, dt: float):
         super().update(dt)
         # sync rect
-        self.rect.x = round(self.position[0])
-        self.rect.y = round(self.position[1])
+        self.x = self.position[0]
+        self.y = self.position[1]
 
     def collide(self, other: "Colliable") -> bool:
         return self.rect.colliderect(other.get_rect())
 
     def get_rect(self) -> pg.Rect:
         return self.rect
+
+    @property
+    def x(self):
+        return self.rect.x
+
+    @x.setter
+    def x(self, value):
+        self.rect.x = round(value)
+
+    @property
+    def y(self):
+        return self.rect.y
+
+    @y.setter
+    def y(self, value):
+        self.rect.y = round(value)

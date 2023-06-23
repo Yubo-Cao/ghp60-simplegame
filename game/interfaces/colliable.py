@@ -42,10 +42,10 @@ class CollisionHandler(Updatable):
     def register(
         self,
         callback: CollisionCallback,
-        a: type[Colliable],
-        b: type[Colliable],
+        a: Colliable,
+        b: Colliable,
     ):
-        self.jumptable.setdefault(a, {}).setdefault(b, []).append(callback)
+        self.jumptable.setdefault(type(a), {}).setdefault(type(b), []).append(callback)
 
     def update(self, dt):
         collisions = []
@@ -55,7 +55,9 @@ class CollisionHandler(Updatable):
                     collisions.append(Collision(a, b))
 
         for collision in collisions:
-            for callback in self.jumptable[type(collision.a)][type(collision.b)]:
+            for callback in self.jumptable.get(type(collision.a), {}).get(
+                type(collision.b), []
+            ):
                 callback(collision)
 
         self.callbacks.clear()

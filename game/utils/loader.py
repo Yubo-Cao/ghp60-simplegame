@@ -14,7 +14,7 @@ def load_im(
     path: str | Path,
     scale: float = 1,
     color_key: tuple[int, int, int] | int = -1,
-) -> pg.sprite.Sprite:
+) -> pg.Surface:
     assert (DATA_DIR / path).exists(), f"File {path} does not exist"
     image = pg.image.load(str(DATA_DIR / path))
     if scale != 1:

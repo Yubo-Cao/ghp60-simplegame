@@ -19,3 +19,16 @@ def move_vector(
     x = math.cos(angle) * intersect.width
     y = math.sin(angle) * intersect.height
     return x, y
+
+
+def make_rect(x: float, y: float, w: float, h: float) -> pg.Rect:
+    return pg.Rect(round(x), round(y), round(w), round(h))
+
+
+def calculate_support(
+    a: pg.Rect,
+    b: pg.Rect,
+    v_a: tuple[float, float],
+    v_b: tuple[float, float],
+) -> tuple[float, float]:
+    ...

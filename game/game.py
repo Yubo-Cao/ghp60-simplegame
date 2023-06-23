@@ -2,9 +2,11 @@ from typing import TypeVar
 
 import pygame as pg
 
-from .interfaces import CollisionHandler, PlayInstance, RenderHandler, UpdateHandler
+from .interfaces import (CollisionHandler, PlayInstance, RenderHandler,
+                         UpdateHandler)
 from .player import Player
-from .utils import load_im
+from .utils import load_im, make_rect
+from .wall import Wall
 
 T = TypeVar("T", bound=PlayInstance)
 
@@ -20,7 +22,6 @@ class Game:
         self.renders = RenderHandler()
         self.updates = UpdateHandler()
 
-        self.player = self.__add_instance(Player())
         self.dt: int
         self.surface: pg.Surface
         self.clock: pg.time.Clock
@@ -38,10 +39,18 @@ class Game:
         pg.display.set_caption(self.TITLE)
         pg.display.set_icon(load_im("icon.png"))
         self.clock = pg.time.Clock()
+        self.__init_scene()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         pg.quit()
+
+    def __init_scene(self):
+        self.player = self.__add_instance(Player())
+        self.wall = self.__add_instance(
+            Wall(make_rect(0, Game.HEIGHT - 64, Game.WIDTH, 64))
+        )
+        self.collisions.register(self.player.wall_collide, self.player, self.wall)
 
     def __add_instance(self, instance: T) -> T:
         self.collisions.add(instance)

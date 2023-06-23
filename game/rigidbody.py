@@ -84,5 +84,5 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
 
     def __repr__(self):
         return (
-            f"RigidBodyRect({self.rect}, {self.mass}, {self.decaying}, {self.gravity})"
+            f"RigidBodyRect({self.rect}, {self.mass}g, {self.position}, {self.velocity}, {self.acceleration})"
         )

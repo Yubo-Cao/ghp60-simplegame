@@ -2,7 +2,8 @@ from enum import Enum
 
 import pygame as pg
 
-from .interfaces import Collision, ObservableDescriptor, PlayInstance
+from .interfaces import (Colliable, Collision, ObservableDescriptor,
+                         PlayInstance)
 from .rigidbody import RigidBodyRect
 from .utils import invert_vector, load_im, move_vector
 
@@ -58,20 +59,15 @@ class Player(pg.sprite.Sprite, PlayInstance):
 
     def wall_collide(self, collision: Collision):
         vec = invert_vector(self.rb.velocity)
-        self.rb.apply_force(
-            move_vector(collision.a.get_rect(), collision.b.get_rect(), vec)
-        )
-        self.__sync_rect()
+        vec = move_vector(collision.a.get_rect(), collision.b.get_rect(), vec)
+        self.rb.x += vec[0]
+        self.rb.y += vec[1]
 
     def collide(self, other: "Colliable") -> bool:
         return self.rect.colliderect(other.get_rect())
 
     def get_rect(self) -> pg.Rect:
         return self.rect
-
-    def __sync_rect(self):
-        self.rect.x = round(self.rb.x)
-        self.rect.y = round(self.rb.y)
 
     def __handle_move(self, keys):
         if keys[pg.K_LEFT]:

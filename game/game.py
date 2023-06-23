@@ -13,6 +13,7 @@ class Game:
     SIZE = WIDTH, HEIGHT = 1200, 800
     TITLE = "Catch the ball"
     FPS = 60
+    BACKGROUND_COLOR = (255, 255, 255)
 
     def __init__(self):
         self.collisions = CollisionHandler()
@@ -25,10 +26,12 @@ class Game:
         self.clock: pg.time.Clock
 
     def loop(self):
-        dt = self.clock.tick(self.FPS) / 1000
+        dt = self.clock.tick(self.FPS) / 10 # deciseconds
+        self.surface.fill(self.BACKGROUND_COLOR)
         self.updates.update(dt)
         self.collisions.update(dt)
         self.renders.render(self.surface)
+        pg.display.flip()
 
     def __enter__(self):
         self.surface = pg.display.set_mode(self.SIZE)

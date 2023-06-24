@@ -1,8 +1,9 @@
-from .wall import Wall
-from .utils import *
-from .physics import *
-from .interfaces import *
 import random
+
+from .interfaces import *
+from .physics import *
+from .utils import *
+from .wall import Wall
 
 
 class Monster(PlayInstance):

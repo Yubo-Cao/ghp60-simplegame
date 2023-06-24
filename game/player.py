@@ -3,18 +3,13 @@ from enum import Enum
 import pygame as pg
 
 from .burger import Burger, BurgerLayer
-from .interfaces import (
-    Colliable,
-    Collision,
-    CollisionCallback,
-    ObservableDescriptor,
-    PlayInstance,
-)
+from .command import RemoveInstanceCMD, issue_command
+from .interfaces import (Colliable, Collision, CollisionCallback,
+                         ObservableDescriptor, PlayInstance)
+from .monster import Monster
 from .physics import RigidBodyRect, Vector2D, handle_collision
 from .utils import Rect, load_im
 from .wall import Wall
-from .command import issue_command, RemoveInstanceCMD
-from .monster import Monster
 
 
 class Direction(Enum):
@@ -36,8 +31,8 @@ class Player(pg.sprite.Sprite, PlayInstance):
         DIVE = 3
 
     def __init__(
-            self,
-            speed: float = 128,
+        self,
+        speed: float = 128,
     ) -> None:
         super().__init__()
         self.speed = speed
@@ -118,7 +113,7 @@ class Player(pg.sprite.Sprite, PlayInstance):
     def layer_collide(self, collision: Collision):
         assert isinstance(collision.b, BurgerLayer)
         self.burger.add_layer(collision.b)
-        self.score = len(self.burger.layers)
+        self.score = len(self.burger.layers) * 20
 
     def monster_collide(self, collision: Collision):
         assert isinstance(collision.b, Monster)

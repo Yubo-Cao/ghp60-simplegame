@@ -1,5 +1,6 @@
-import pygame as pg
 from enum import Enum
+
+import pygame as pg
 
 
 class HAlign(Enum):

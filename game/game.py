@@ -1,15 +1,18 @@
 import random
+from collections.abc import Callable
 from logging import getLogger
 from typing import TypeVar
 
 import pygame as pg
 
 from .burger import LAYERS
-from .command import RemoveInstanceCMD, commands, RemoveCallbackCMD
-from .interfaces import CollisionHandler, PlayInstance, RenderHandler, UpdateHandler
+from .command import RemoveCallbackCMD, RemoveInstanceCMD, commands
+from .constants import FPS, HEIGHT, WIDTH
+from .interfaces import (CollisionHandler, PlayInstance, RenderHandler,
+                         UpdateHandler)
 from .monster import Monster
 from .player import Player
-from .utils import Vector2D, load_im, make_rect
+from .utils import Vector2D, make_rect
 from .wall import Wall
 
 T = TypeVar("T", bound=PlayInstance)
@@ -17,34 +20,62 @@ log = getLogger(__name__)
 
 
 class Game:
-    SIZE = WIDTH, HEIGHT = 1200, 800
-    TITLE = "Catch the ball"
-    FPS = 60
     BACKGROUND_COLOR = (255, 255, 255)
     BURGER_LAYER_TICKS = 128
     MONSTER_TICKS = 300
     GAME_TIME = 60 * 60
     GRID_SIZE = 48
 
-    def __init__(self) -> None:
+    def __init__(self, surface: pg.Surface, end_game: Callable[[str, int, str], None]):
+        self.surface = surface
         self.collisions = CollisionHandler()
         self.renders = RenderHandler()
         self.updates = UpdateHandler()
+        self.end_game = end_game
 
-        self.dt: int
-        self.surface: pg.Surface
-        self.clock: pg.time.Clock
-        self.tick: int
+        self.clock = pg.time.Clock()
+        self.walls: list[Wall] = []
+        self.__init_scene()
+        self.tick = 0
 
     def loop(self):
-        dt = self.clock.tick(self.FPS) / 1000
-        self.surface.fill(self.BACKGROUND_COLOR)
-        self.__update_state(dt)
-        self.tick += 1
-        self.__spawn_burger()
-        self.__spawn_monter()
-        self.__handle_cmd()
+        while True:
+            dt = self.clock.tick(FPS) / 1000
+            self.tick += 1
+            self.surface.fill(self.BACKGROUND_COLOR)
+            self.__update_state(dt)
+            self.__spawn_burger()
+            self.__spawn_monster()
+            self.__handle_cmd()
+            self.__render_player_status()
+            self.__handle_end_game()
+            pg.display.flip()
 
+    def __enter__(self):
+        self.clock = pg.time.Clock()
+        self.walls = []
+        self.__init_scene()
+        self.tick = 0
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        ...
+
+    def __handle_end_game(self):
+        if self.tick >= self.GAME_TIME:
+            if self.player.score >= 100:
+                self.end_game("You win!", self.player.score, "You got 100 points!")
+            elif self.player.score == 0:
+                self.end_game("You lose!", self.player.score, "You scored nothing!")
+            else:
+                self.end_game("You lose!", self.player.score, "Be better next time!")
+        for evt in pg.event.get():
+            if evt.type == pg.QUIT:
+                pg.quit()
+        if self.player.health <= 0:
+            self.end_game("You lose!", self.player.score, "You died!")
+
+    def __render_player_status(self):
         self.__put_text(f"Score: {self.player.score}", Vector2D(Game.GRID_SIZE + 16, 0))
         self.__put_text(
             f"Health: {self.player.health}", Vector2D(Game.GRID_SIZE + 16, 32)
@@ -52,8 +83,6 @@ class Game:
         self.__put_text(
             f"Time: {self.GAME_TIME - self.tick}", Vector2D(Game.GRID_SIZE + 16, 64)
         )
-
-        pg.display.flip()
 
     def __put_text(self, text: str, pos: Vector2D, size: int = 32) -> None:
         font = pg.font.SysFont("Cascadia Code", size)
@@ -78,17 +107,17 @@ class Game:
     def __spawn_burger(self):
         if self.tick % self.BURGER_LAYER_TICKS == 0:
             layer = random.choice(LAYERS)()
-            layer.pos = Vector2D(random.randint(0, Game.WIDTH), 0)
+            layer.pos = Vector2D(random.randint(0, WIDTH), 0)
             self.__add_instance(layer)
 
-    def __spawn_monter(self):
+    def __spawn_monster(self):
         if self.tick % self.MONSTER_TICKS == 0:
             monster = self.__add_instance(Monster())
             while True:
                 x = random.randint(
-                    Game.GRID_SIZE, Game.WIDTH - Game.GRID_SIZE - monster.rb.rect.width
+                    Game.GRID_SIZE, WIDTH - Game.GRID_SIZE - monster.rb.rect.width
                 )
-                y = random.randint(0, Game.HEIGHT)
+                y = random.randint(0, HEIGHT)
                 if any(
                     wall.get_rect().collide(
                         make_rect(
@@ -105,32 +134,15 @@ class Game:
             monster.rb.position = Vector2D(x, y)
             self.__add_instance(monster)
 
-    def __enter__(self):
-        self.surface = pg.display.set_mode(self.SIZE)
-        pg.display.set_caption(self.TITLE)
-        pg.display.set_icon(load_im("icon.png"))
-        self.clock = pg.time.Clock()
-        self.walls = []
-        self.__init_scene()
-        self.tick = 0
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        pg.quit()
-
     def __init_scene(self):
         self.player = self.__add_instance(Player())
-        self.player.rb.position = Vector2D(Game.WIDTH / 2, 0)
-        self.bottom_wall = self.__wall(
-            0, Game.HEIGHT - Game.GRID_SIZE, Game.WIDTH, 1024
-        )
-        self.left_wall = self.__wall(
-            Game.GRID_SIZE - 1024, -1024, 1024, Game.HEIGHT + 1024
-        )
+        self.player.rb.position = Vector2D(WIDTH / 2, 0)
+        self.bottom_wall = self.__wall(0, HEIGHT - Game.GRID_SIZE, WIDTH, 1024)
+        self.left_wall = self.__wall(Game.GRID_SIZE - 1024, -1024, 1024, HEIGHT + 1024)
         self.right_wall = self.__wall(
-            Game.WIDTH - Game.GRID_SIZE, -1024, 1024, Game.HEIGHT + 1024
+            WIDTH - Game.GRID_SIZE, -1024, 1024, HEIGHT + 1024
         )
-        self.top_wall = self.__wall(-256, -1024, Game.WIDTH, 1024)
+        self.top_wall = self.__wall(-256, -1024, WIDTH, 1024)
         self.__wall(
             Game.GRID_SIZE * 2, Game.GRID_SIZE * 5, Game.GRID_SIZE * 2, Game.GRID_SIZE
         ),

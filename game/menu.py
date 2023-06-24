@@ -1,12 +1,13 @@
 import pygame as pg
-from .utils import text, HAlign, VAlign
+
+from .utils import HAlign, VAlign, text
+
 
 class MainMenu:
-    def __init__(self, width, height, play_fn):
-        self.screen_width = width
-        self.screen_height = height
+    def __init__(self, surface, play_fn):
+        self.surface = surface
+        self.screen_width, self.screen_height = self.surface.get_size()
         self.cx, self.cy = self.screen_width // 2, self.screen_height // 2
-        self.screen = pg.display.set_mode((self.screen_width, self.screen_height))
 
         pg.display.set_caption("Catch Game")
         self.play_fn = play_fn
@@ -24,7 +25,7 @@ class MainMenu:
         # Load font
         self.font = pg.font.Font(None, 50)
 
-    def main_menu(self):
+    def loop(self):
         while True:
             # Handle events
             for event in pg.event.get():
@@ -43,16 +44,28 @@ class MainMenu:
                     elif self.cx - 100 <= x <= self.cx + 100 and 350 <= y <= 400:
                         exit()
 
-            self.screen.fill(self.WHITE)
+            self.surface.fill(self.WHITE)
 
             # Draw the menu options
             play_rect = pg.Rect(self.cx - 100, 250, 200, 50)
             quit_rect = pg.Rect(self.cx - 100, 350, 200, 50)
-            pg.draw.rect(self.screen, self.BLACK, play_rect)
-            pg.draw.rect(self.screen, self.BLACK, quit_rect)
+            pg.draw.rect(self.surface, self.BLACK, play_rect)
+            pg.draw.rect(self.surface, self.BLACK, quit_rect)
 
-            text(self.screen, "Play", (self.cx, 260), halign=HAlign.CENTER, valign=VAlign.CENTER)
-            text(self.screen, "Quit", (self.cx, 360), halign=HAlign.CENTER, valign=VAlign.CENTER)
+            text(
+                self.surface,
+                "Play",
+                (self.cx, 260),
+                halign=HAlign.CENTER,
+                valign=VAlign.CENTER,
+            )
+            text(
+                self.surface,
+                "Quit",
+                (self.cx, 360),
+                halign=HAlign.CENTER,
+                valign=VAlign.CENTER,
+            )
 
             # Update the display
             pg.display.update()

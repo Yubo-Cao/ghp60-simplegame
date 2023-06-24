@@ -2,7 +2,7 @@ import pygame as pg
 
 from .interfaces import PlayInstance, Colliable, Renderable, Collision
 from .physics import RigidBodyRect, handle_collision
-from .utils import Rect, Vector2D, Number
+from .utils import Rect, Vector2D, Number, DATA_DIR, load_im
 
 
 class BurgerLayer(PlayInstance):
@@ -10,9 +10,28 @@ class BurgerLayer(PlayInstance):
         self.sprite = sprite
         self.name = name
 
-        self.pos = Vector2D[Number](0.0, 0.0)
-        self.rect = Rect(self.pos.x, self.pos.y, sprite.get_width(), sprite.get_height())
+        self._pos = Vector2D[Number](0.0, 0.0)
+        self.rect = Rect(
+            self.pos.x,
+            self.pos.y,
+            sprite.get_width(),
+            sprite.get_height(),
+        )
         self.rb = RigidBodyRect(self.rect, gravity=True)
+
+    @property
+    def pos(self) -> Vector2D[Number]:
+        return self._pos
+
+    @pos.setter
+    def pos(self, value: Vector2D[Number]) -> None:
+        self._pos = value
+        self.rect = Rect(
+            value.x,
+            value.y,
+            self.sprite.get_width(),
+            self.sprite.get_height(),
+        )
 
     def get_rect(self) -> Rect:
         return self.rect
@@ -36,6 +55,12 @@ class BurgerLayer(PlayInstance):
         return f"BurgerLayer({self.name})"
 
 
+LAYERS = [
+    BurgerLayer(load_im(path), path.stem)
+    for path in (DATA_DIR / "burger_layers").glob("*.png")
+]
+
+
 class BurgerClass(Renderable, Colliable):
     def __init__(self) -> None:
         self.rect = Rect(0, 0, 0, 0)
@@ -46,6 +71,11 @@ class BurgerClass(Renderable, Colliable):
     def move(self, pos: Vector2D[Number]) -> None:
         self.rect.x = pos.x
         self.rect.y = pos.y
+
+        h = 0
+        for layer in self.layers:
+            layer.pos = Vector2D[Number](pos.x, pos.y + h)
+            h += layer.sprite.get_height()
 
     def get_rect(self) -> Rect:
         return self.rect

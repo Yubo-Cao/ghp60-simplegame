@@ -66,7 +66,10 @@ class Player(pg.sprite.Sprite, PlayInstance):
             case Player.State.DIVE:
                 self.__handle_move(keys)
         self.rb.update(dt)
-        self.burger.move_to(self.rb.position)
+        self.burger.move_to(
+            self.rb.position
+            + Vector2D((self.rb.rect.width - 48) / 2, self.rb.rect.height / 2)
+        )
 
     def render(self, surface: pg.Surface):
         # TODO: have different sprite for each state

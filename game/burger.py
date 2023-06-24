@@ -114,8 +114,8 @@ class Burger(Renderable, Colliable):
     def __arrange_layers(self, x: Number, y: Number) -> None:
         h = 0
         for layer in self.layers:
-            layer.pos = Vector2D[Number](x, y - h)
             h += layer.sprite.get_height()
+            layer.pos = Vector2D[Number](x, y - h)
         self.rect = Rect(x, y - h, self.rect.w, h)
 
     def layer_collide(self, collision: Collision) -> None:

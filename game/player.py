@@ -5,6 +5,7 @@ import pygame as pg
 from .interfaces import Colliable, Collision, ObservableDescriptor, PlayInstance
 from .physics import RigidBodyRect, Vector2D, handle_collision
 from .utils import load_im, Rect
+from .burger import Burger, BurgerLayer
 
 
 class Direction(Enum):
@@ -25,8 +26,8 @@ class Player(pg.sprite.Sprite, PlayInstance):
         DIVE = 2
 
     def __init__(
-            self,
-            speed: float = 64,
+        self,
+        speed: float = 64,
     ) -> None:
         super().__init__()
         self.image = load_im("player.png", scale=48 / 2048)
@@ -38,6 +39,7 @@ class Player(pg.sprite.Sprite, PlayInstance):
             decaying=True,
             gravity=True,
         )
+        self.burger = Burger()
 
     def update(self, dt: float):
         keys = pg.key.get_pressed()
@@ -57,6 +59,7 @@ class Player(pg.sprite.Sprite, PlayInstance):
             case Player.State.DIVE:
                 self.__handle_move(keys)
         self.rb.update(dt)
+        self.burger.move_to(self.rb.position)
 
     def render(self, surface: pg.Surface):
         # TODO: have different sprite for each state
@@ -69,6 +72,10 @@ class Player(pg.sprite.Sprite, PlayInstance):
             return
         if result.normal == Vector2D(0, -1):
             self.state = Player.State.WALK
+    
+    def layer_collide(self, collision: Collision):
+        assert type(collision.b) == BurgerLayer
+        self.burger.add_layer(collision.b)
 
     def collide(self, other: "Colliable") -> bool:
         return self.rb.collide(other)

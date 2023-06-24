@@ -3,7 +3,7 @@ import sys
 
 import pygame
 
-from .burger import BurgerClass
+from .burger import Burger
 from .player import Player
 
 pygame.init()
@@ -14,7 +14,7 @@ score_increment = 1
 
 
 def collision():
-    if Player.colliderect(BurgerClass):
+    if Player.colliderect(Burger):
         score += score_increment
 
 

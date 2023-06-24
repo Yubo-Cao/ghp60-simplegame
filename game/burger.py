@@ -61,21 +61,24 @@ LAYERS = [
 ]
 
 
-class BurgerClass(Renderable, Colliable):
+class Burger(Renderable, Colliable):
     def __init__(self) -> None:
         self.rect = Rect(0, 0, 0, 0)
-        # TODO: Connect with player
         self.velocity = Vector2D[Number](0.0, 0.0)
         self.layers: list[BurgerLayer] = []
 
-    def move(self, pos: Vector2D[Number]) -> None:
-        self.rect.x = pos.x
-        self.rect.y = pos.y
+    def move_to(self, pos: Vector2D[Number]) -> None:
+        self.rect = Rect(
+            pos.x,
+            pos.y,
+            self.rect.w,
+            self.rect.h,
+        )
+        self.__arrange_layers(pos.x, pos.y)
 
-        h = 0
-        for layer in self.layers:
-            layer.pos = Vector2D[Number](pos.x, pos.y + h)
-            h += layer.sprite.get_height()
+    def add_layer(self, layer: BurgerLayer) -> None:
+        self.layers.insert(0, layer)
+        self.__arrange_layers(self.rect.x, self.rect.y)
 
     def get_rect(self) -> Rect:
         return self.rect
@@ -89,3 +92,9 @@ class BurgerClass(Renderable, Colliable):
     def render(self, surface: pg.Surface) -> None:
         for layer in self.layers:
             layer.render(surface)
+
+    def __arrange_layers(self, x: Number, y: Number) -> None:
+        h = 0
+        for layer in self.layers:
+            layer.pos = Vector2D[Number](x, y + h)
+            h += layer.sprite.get_height()

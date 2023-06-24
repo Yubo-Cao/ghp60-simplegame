@@ -32,7 +32,7 @@ class ObservableDescriptor(Observable, Generic[T]):
         return getattr(instance, self.name)
 
     def __set__(self, instance, value: T) -> None:
-        old_value = getattr(instance, self.name)
+        old_value = getattr(instance, self.name, None)
         setattr(instance, self.name, value)
         self.notify_observers(instance, old_value, value)
 

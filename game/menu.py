@@ -37,9 +37,15 @@ class MainMenu:
                     elif event.key == pygame.K_p:  # 'p' key to play
                         self.play_fn()  # Start the game
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.cx - 100 <= event.pos[0] <= self.cx + 100 and 250 <= event.pos[1] <= 300:
+                    if (
+                        self.cx - 100 <= event.pos[0] <= self.cx + 100
+                        and 250 <= event.pos[1] <= 300
+                    ):
                         self.play_fn()  # Start the game
-                    elif self.cx - 100 <= event.pos[0] <= self.cx + 100 and 350 <= event.pos[1] <= 400:
+                    elif (
+                        self.cx - 100 <= event.pos[0] <= self.cx + 100
+                        and 350 <= event.pos[1] <= 400
+                    ):
                         pygame.quit()
                         exit()
 

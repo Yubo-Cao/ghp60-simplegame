@@ -13,6 +13,8 @@ from .interfaces import (
 from .physics import RigidBodyRect, Vector2D, handle_collision
 from .utils import Rect, load_im
 from .wall import Wall
+from .command import issue_command, RemoveInstanceCMD
+from .monster import Monster
 
 
 class Direction(Enum):
@@ -47,6 +49,9 @@ class Player(pg.sprite.Sprite, PlayInstance):
             gravity=True,
         )
         self.burger = Burger()
+
+        self.health = 100
+        self.score = 0
 
     def update(self, dt: float):
         keys = pg.key.get_pressed()
@@ -86,11 +91,18 @@ class Player(pg.sprite.Sprite, PlayInstance):
     def layer_collide(self, collision: Collision):
         assert isinstance(collision.b, BurgerLayer)
         self.burger.add_layer(collision.b)
+        self.score = len(self.burger.layers)
+
+    def monster_collide(self, collision: Collision):
+        assert isinstance(collision.b, Monster)
+        self.health -= 10
+        issue_command(RemoveInstanceCMD(collision.b))
 
     def get_callbacks(self) -> list[tuple[CollisionCallback, type["Colliable"]]]:
         return [
             (self.wall_collide, Wall),
             (self.layer_collide, BurgerLayer),
+            (self.monster_collide, Monster),
         ]
 
     def collide(self, other: "Colliable") -> bool:

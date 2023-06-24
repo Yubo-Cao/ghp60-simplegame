@@ -2,9 +2,17 @@ from abc import abstractmethod
 from collections.abc import Callable
 from typing import NamedTuple, Protocol
 
-from game.utils import Vector2D, Rect
+from game.utils import Rect, Vector2D
+
 from .updatable import Updatable
-from typeguard import typechecked
+
+
+class Collision(NamedTuple):
+    a: "Colliable"
+    b: "Colliable"
+
+
+CollisionCallback = Callable[[Collision], None]
 
 
 class Colliable(Protocol):
@@ -20,22 +28,16 @@ class Colliable(Protocol):
     def collide(self, other: "Colliable") -> bool:
         ...
 
-
-class Collision(NamedTuple):
-    a: Colliable
-    b: Colliable
-
-
-CollisionCallback = Callable[[Collision], None]
+    @abstractmethod
+    def get_callbacks(self) -> list[tuple[CollisionCallback, type["Colliable"]]]:
+        ...
 
 
 class CollisionHandler(Updatable):
-    def __init__(self):
+    def __init__(self) -> None:
         self.callbacks: list[CollisionCallback] = []
         self.collidables: list[Colliable] = []
-        self.jumptable: dict[
-            type[Colliable], dict[type[Colliable], list[CollisionCallback]]
-        ] = {}
+        self.jumptable: list[tuple[Colliable, type[Colliable], CollisionCallback]] = []
 
     def add(self, colliable: Colliable):
         self.collidables.append(colliable)
@@ -47,9 +49,17 @@ class CollisionHandler(Updatable):
         self,
         callback: CollisionCallback,
         a: Colliable,
-        b: Colliable,
+        b: type[Colliable],
     ):
-        self.jumptable.setdefault(type(a), {}).setdefault(type(b), []).append(callback)
+        self.jumptable.append((a, b, callback))
+
+    def unregister(
+        self,
+        callback: CollisionCallback,
+        a: Colliable,
+        b: type[Colliable],
+    ):
+        self.jumptable.remove((a, b, callback))
 
     def update(self, dt):
         collisions = []
@@ -59,9 +69,8 @@ class CollisionHandler(Updatable):
                     collisions.append(Collision(a, b))
 
         for collision in collisions:
-            for callback in self.jumptable.get(type(collision.a), {}).get(
-                type(collision.b), []
-            ):
-                callback(collision)
+            for a, b, callback in self.jumptable:
+                if a == collision.a and isinstance(collision.b, b):
+                    callback(collision)
 
         self.callbacks.clear()

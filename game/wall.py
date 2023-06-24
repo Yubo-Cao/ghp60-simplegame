@@ -1,7 +1,7 @@
 import pygame as pg
 
-from .interfaces import PlayInstance
-from .utils import load_im, Vector2D, Rect
+from .interfaces import Colliable, CollisionCallback, PlayInstance
+from .utils import Rect, Vector2D, load_im
 
 
 class Wall(PlayInstance):
@@ -17,14 +17,17 @@ class Wall(PlayInstance):
             for y in range(0, rect.height, Wall.HEIGHT):
                 self.surface.blit(Wall.TEXTURE, (x, y))
 
-    def get_rect(self) -> "Rect":
+    def get_rect(self) -> Rect:
         return Rect.from_pygame(self.pg_rect)
 
-    def get_velocity(self) -> "Vector2D":
+    def get_velocity(self) -> Vector2D:
         return Vector2D(0, 0)
 
-    def collide(self, other: "Colliable") -> bool:
+    def collide(self, other: Colliable) -> bool:
         return other.get_rect().collide(self.get_rect())
+
+    def get_callbacks(self) -> list[tuple[CollisionCallback, type[Colliable]]]:
+        return []
 
     def render(self, surface: pg.Surface) -> None:
         surface.blit(self.surface, self.pg_rect)

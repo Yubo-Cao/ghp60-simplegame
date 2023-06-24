@@ -2,8 +2,8 @@ from typing import NamedTuple
 
 import pygame as pg
 
-from game.interfaces import Colliable, Renderable, Updatable
-from game.utils.ds import Rect, Vector2D
+from game.interfaces import Colliable, CollisionCallback, Renderable, Updatable
+from game.utils.ds import Number, Rect, Vector2D
 
 
 class RigidBody(Updatable):
@@ -12,34 +12,34 @@ class RigidBody(Updatable):
 
     def __init__(self, mass: float, decaying: bool = True, gravity: bool = True):
         self.mass = mass
-        self.acceleration: Vector2D = Vector2D(0, 0)
-        self.velocity: Vector2D = Vector2D(0, 0)
-        self.position: Vector2D = Vector2D(0, 0)
+        self.acceleration = Vector2D[Number](0, 0)
+        self.velocity = Vector2D[Number](0, 0)
+        self.position = Vector2D[Number](0, 0)
         self.decaying = decaying
         self.gravity = gravity
 
-    def apply_force(self, force: Vector2D):
-        self.acceleration = Vector2D(
+    def apply_force(self, force: Vector2D[Number]):
+        self.acceleration = Vector2D[Number](
             self.acceleration[0] + force[0] / self.mass,
             self.acceleration[1] + force[1] / self.mass,
         )
 
     def update(self, dt: float):
-        self.position = Vector2D(
+        self.position = Vector2D[Number](
             self.position[0] + self.velocity[0] * dt,
             self.position[1] + self.velocity[1] * dt,
         )
-        self.velocity = Vector2D(
+        self.velocity = Vector2D[Number](
             self.velocity[0] + self.acceleration[0] * dt,
             self.velocity[1] + self.acceleration[1] * dt,
         )
         if self.decaying:
-            self.acceleration = Vector2D(
+            self.acceleration = Vector2D[Number](
                 self.acceleration[0] * (1 - self.ACCELERATION_DECAY),
                 self.acceleration[1] * (1 - self.ACCELERATION_DECAY),
             )
         if self.gravity:
-            self.apply_force(Vector2D(0, self.GRAVITY_CONSTANT * self.mass))
+            self.apply_force(Vector2D[Number](0, self.GRAVITY_CONSTANT * self.mass))
 
     def __repr__(self):
         return f"RigidBody({self.mass}, {self.decaying}, {self.gravity})"
@@ -65,13 +65,18 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
             self.rect.height,
         )
 
-    def collide(self, other: "Colliable") -> bool:
+    def collide(self, other: Colliable) -> bool:
         return self.rect.collide(other.get_rect())
+
+    def get_callbacks(
+        self,
+    ) -> list[tuple[CollisionCallback, type[Colliable]]]:
+        return []
 
     def get_rect(self) -> Rect:
         return self.rect
 
-    def get_velocity(self) -> "Vector2D":
+    def get_velocity(self) -> "Vector2D[Number]":
         return self.velocity
 
     @property
@@ -80,7 +85,7 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
 
     @x.setter
     def x(self, value):
-        self.position = Vector2D(value, self.position[1])
+        self.position = Vector2D[Number](value, self.position[1])
 
     @property
     def y(self):
@@ -88,16 +93,16 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
 
     @y.setter
     def y(self, value):
-        self.position = Vector2D(self.position[0], value)
+        self.position = Vector2D[Number](self.position[0], value)
 
     def __repr__(self):
         return f"RigidBodyRect({self.rect}, {self.mass}g, {self.position}, {self.velocity}, {self.acceleration})"
 
 
 class ContactResult(NamedTuple):
-    point: Vector2D
-    normal: Vector2D
-    plane: Vector2D
+    point: Vector2D[Number]
+    normal: Vector2D[Number]
+    plane: Vector2D[Number]
     penetration_depth: float
     time_of_contact: float
 
@@ -112,8 +117,8 @@ def prevent_zero(x: float) -> float:
 def calculate_contact(
     a: Rect,
     b: Rect,
-    v_a: Vector2D,
-    v_b: Vector2D,
+    v_a: Vector2D[Number],
+    v_b: Vector2D[Number],
 ) -> ContactResult:
     t_x_enter = (b.left - a.right) / prevent_zero(v_a[0] - v_b[0])
     t_x_exit = (b.right - a.left) / prevent_zero(v_a[0] - v_b[0])
@@ -136,11 +141,11 @@ def calculate_contact(
     b = b.move(v_b * t_contact)
     xs = sorted([a.left, a.right, b.left, b.right])[1:3]
     ys = sorted([a.top, a.bottom, b.top, b.bottom])[1:3]
-    contact = Vector2D((xs[0] + xs[1]) / 2, (ys[0] + ys[1]) / 2)
+    contact = Vector2D[Number]((xs[0] + xs[1]) / 2, (ys[0] + ys[1]) / 2)
 
-    normal = Vector2D(
+    normal = Vector2D[Number](
         1 if contact[0] == a.left else -1 if contact[0] == a.right else 0,
         1 if contact[1] == a.top else -1 if contact[1] == a.bottom else 0,
     )
-    plane = Vector2D(-normal[1], normal[0])
+    plane = Vector2D[Number](-normal[1], normal[0])
     return ContactResult(contact, normal, plane, penetration, t_contact)

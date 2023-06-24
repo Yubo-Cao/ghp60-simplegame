@@ -86,9 +86,6 @@ class Vector2D(Generic[E]):
         )
         pos.draw_point(surface, color)
 
-    def __eq__(self, other: "Vector2D[E]") -> bool:
-        return self.x == other.x and self.y == other.y
-
 
 class Rect:
     def __init__(self, x: Number, y: Number, w: Number, h: Number) -> None:

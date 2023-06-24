@@ -1,62 +1,76 @@
+from contextlib import suppress
+from functools import partial
+
 import pygame as pg
 
-from .interfaces import PlayInstance, Colliable, Renderable, Collision
+from game.interfaces.colliable import Colliable, CollisionCallback
+
+from .command import RemoveInstanceCMD, issue_command, RemoveCallbackCMD
+from .interfaces import (
+    Colliable,
+    Collision,
+    CollisionCallback,
+    PlayInstance,
+    Renderable,
+)
 from .physics import RigidBodyRect, handle_collision
-from .utils import Rect, Vector2D, Number, DATA_DIR, load_im
+from .utils import DATA_DIR, Number, Rect, Vector2D, load_im
+from .wall import Wall
 
 
 class BurgerLayer(PlayInstance):
     def __init__(self, sprite: pg.Surface, name: str) -> None:
         self.sprite = sprite
         self.name = name
-
-        self._pos = Vector2D[Number](0.0, 0.0)
-        self.rect = Rect(
-            self.pos.x,
-            self.pos.y,
-            sprite.get_width(),
-            sprite.get_height(),
+        self.width = sprite.get_width()
+        self.height = sprite.get_height()
+        self.rb = RigidBodyRect(
+            Rect(0, 0, self.width, self.height),
+            mass=4,
+            gravity=True,
         )
-        self.rb = RigidBodyRect(self.rect, gravity=True)
 
     @property
     def pos(self) -> Vector2D[Number]:
-        return self._pos
+        return self.rb.position
 
     @pos.setter
     def pos(self, value: Vector2D[Number]) -> None:
-        self._pos = value
-        self.rect = Rect(
-            value.x,
-            value.y,
-            self.sprite.get_width(),
-            self.sprite.get_height(),
-        )
+        self.rb.position = value
 
     def get_rect(self) -> Rect:
-        return self.rect
+        return self.rb.rect
 
     def get_velocity(self) -> "Vector2D":
         return self.rb.velocity
 
     def collide(self, other: Colliable) -> bool:
-        return self.rect.collide(other.get_rect())
+        return self.rb.collide(other)
 
     def render(self, surface: pg.Surface) -> None:
         surface.blit(self.sprite, tuple(self.pos))
+        self.rb.render(surface)
 
     def update(self, dt: float) -> None:
         self.rb.update(dt)
 
     def wall_collide(self, collision: Collision):
-        handle_collision(collision, self.rb)
+        with suppress(Exception):  # TODO: fix this
+            handle_collision(collision, self.rb)
+        issue_command(RemoveInstanceCMD(self))
 
     def __repr__(self) -> str:
         return f"BurgerLayer({self.name})"
 
+    def __eq__(self, o: object) -> bool:
+        return id(self) == id(o)
+
+    def get_callbacks(self) -> list[tuple[CollisionCallback, type[Colliable]]]:
+        return [(self.wall_collide, Wall)]
+
 
 LAYERS = [
-    BurgerLayer(load_im(path), path.stem)
+    partial(BurgerLayer, load_im(path), path.stem)
     for path in (DATA_DIR / "burger_layers").glob("*.png")
 ]
 
@@ -77,7 +91,9 @@ class Burger(Renderable, Colliable):
         self.__arrange_layers(pos.x, pos.y)
 
     def add_layer(self, layer: BurgerLayer) -> None:
-        self.layers.insert(0, layer)
+        layer.rb.gravity = False
+        self.layers.append(layer)
+        issue_command(RemoveCallbackCMD(layer.wall_collide, layer, Wall))
         self.__arrange_layers(self.rect.x, self.rect.y)
 
     def get_rect(self) -> Rect:
@@ -96,5 +112,14 @@ class Burger(Renderable, Colliable):
     def __arrange_layers(self, x: Number, y: Number) -> None:
         h = 0
         for layer in self.layers:
-            layer.pos = Vector2D[Number](x, y + h)
+            layer.pos = Vector2D[Number](x, y - h - 10)
             h += layer.sprite.get_height()
+
+    def layer_collide(self, collision: Collision) -> None:
+        assert isinstance(collision.b, BurgerLayer)
+        self.add_layer(collision.b)
+
+    def get_callbacks(self) -> list[tuple[CollisionCallback, type["Colliable"]]]:
+        return [
+            (self.layer_collide, BurgerLayer),
+        ]

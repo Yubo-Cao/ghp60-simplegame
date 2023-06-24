@@ -9,7 +9,7 @@ class Updatable(Protocol):
 
 
 class UpdateHandler(Updatable):
-    def __init__(self):
+    def __init__(self) -> None:
         self.updatables: list[Updatable] = []
 
     def add(self, updatable: Updatable):

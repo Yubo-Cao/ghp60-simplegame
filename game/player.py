@@ -2,10 +2,17 @@ from enum import Enum
 
 import pygame as pg
 
-from .interfaces import Colliable, Collision, ObservableDescriptor, PlayInstance
-from .physics import RigidBodyRect, Vector2D, handle_collision
-from .utils import load_im, Rect
 from .burger import Burger, BurgerLayer
+from .interfaces import (
+    Colliable,
+    Collision,
+    CollisionCallback,
+    ObservableDescriptor,
+    PlayInstance,
+)
+from .physics import RigidBodyRect, Vector2D, handle_collision
+from .utils import Rect, load_im
+from .wall import Wall
 
 
 class Direction(Enum):
@@ -27,10 +34,10 @@ class Player(pg.sprite.Sprite, PlayInstance):
 
     def __init__(
         self,
-        speed: float = 64,
+        speed: float = 128,
     ) -> None:
         super().__init__()
-        self.image = load_im("player.png", scale=48 / 2048)
+        self.image = load_im("player.png")
         self.speed = speed
         self.state: Player.State = Player.State.WALK
         self.rb = RigidBodyRect(
@@ -72,10 +79,16 @@ class Player(pg.sprite.Sprite, PlayInstance):
             return
         if result.normal == Vector2D(0, -1):
             self.state = Player.State.WALK
-    
+
     def layer_collide(self, collision: Collision):
-        assert type(collision.b) == BurgerLayer
+        assert isinstance(collision.b, BurgerLayer)
         self.burger.add_layer(collision.b)
+
+    def get_callbacks(self) -> list[tuple[CollisionCallback, type["Colliable"]]]:
+        return [
+            (self.wall_collide, Wall),
+            (self.layer_collide, BurgerLayer),
+        ]
 
     def collide(self, other: "Colliable") -> bool:
         return self.rb.collide(other)

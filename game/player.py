@@ -3,7 +3,7 @@ from enum import Enum
 import pygame as pg
 
 from .interfaces import Colliable, Collision, ObservableDescriptor, PlayInstance
-from .physics import RigidBodyRect, Vector2D, calculate_contact
+from .physics import RigidBodyRect, Vector2D, handle_collision
 from .utils import load_im, Rect
 
 
@@ -25,8 +25,8 @@ class Player(pg.sprite.Sprite, PlayInstance):
         DIVE = 2
 
     def __init__(
-        self,
-        speed: float = 64,
+            self,
+            speed: float = 64,
     ) -> None:
         super().__init__()
         self.image = load_im("player.png", scale=48 / 2048)
@@ -64,25 +64,16 @@ class Player(pg.sprite.Sprite, PlayInstance):
         surface.blit(self.image, self.rb.rect.to_pygame())
 
     def wall_collide(self, collision: Collision):
-        result = calculate_contact(
-            self.rb.get_rect(),
-            collision.b.get_rect(),
-            self.rb.get_velocity(),
-            collision.b.get_velocity(),
-        )
+        result = handle_collision(collision, self.rb)
         if result.normal == Vector2D(0, 0):
             return
         if result.normal == Vector2D(0, -1):
             self.state = Player.State.WALK
-        self.rb.velocity = self.rb.velocity.reflect(result.plane) * 0.5
-        self.rb.acceleration = self.rb.acceleration.reflect(result.plane) * 0.5
-        new_pos = self.rb.position + result.normal * result.penetration_depth
-        self.rb.position = new_pos
 
     def collide(self, other: "Colliable") -> bool:
         return self.rb.collide(other)
 
-    def get_rect(self) -> pg.Rect:
+    def get_rect(self) -> Rect:
         return self.rb.get_rect()
 
     def get_velocity(self) -> "Vector2D":

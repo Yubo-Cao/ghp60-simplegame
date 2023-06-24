@@ -1,5 +1,5 @@
 import pygame as pg
-
+from .utils import text, HAlign, VAlign
 
 class MainMenu:
     def __init__(self, width, height, play_fn):
@@ -51,10 +51,8 @@ class MainMenu:
             pg.draw.rect(self.screen, self.BLACK, play_rect)
             pg.draw.rect(self.screen, self.BLACK, quit_rect)
 
-            play_text = self.font.render("Play", True, self.WHITE)
-            quit_text = self.font.render("Quit", True, self.WHITE)
-            self.screen.blit(play_text, (self.cx - 45, 260))
-            self.screen.blit(quit_text, (self.cx - 45, 360))
+            text(self.screen, "Play", (self.cx, 260), halign=HAlign.CENTER, valign=VAlign.CENTER)
+            text(self.screen, "Quit", (self.cx, 360), halign=HAlign.CENTER, valign=VAlign.CENTER)
 
             # Update the display
             pg.display.update()

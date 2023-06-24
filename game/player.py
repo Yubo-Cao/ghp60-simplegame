@@ -110,7 +110,6 @@ class Player(pg.sprite.Sprite, PlayInstance):
 
     def wall_collide(self, collision: Collision):
         result = handle_collision(collision, self.rb)
-        print(result)
         if result.normal == Vector2D(0, 0):
             return
         if result.normal == Vector2D(0, -1):

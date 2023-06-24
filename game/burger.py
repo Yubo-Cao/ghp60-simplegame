@@ -4,4 +4,5 @@ from .updatable import Updatable
 
 
 class BurgerClass(Colliable, Renderable, Updatable):
+    print("bruh")
     pass

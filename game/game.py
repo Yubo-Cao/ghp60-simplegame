@@ -46,18 +46,21 @@ class Game:
 
     def __init_scene(self):
         self.player = self.__add_instance(Player())
-        self.bottom_wall = self.__add_instance(
-            Wall(make_rect(0, Game.HEIGHT - 64, Game.WIDTH, 1024))
-        )
-        self.left_wall = self.__add_instance(
-            Wall(make_rect(64 - 1024, 0, 1024, Game.HEIGHT))
-        )
-        self.right_wall = self.__add_instance(
-            Wall(make_rect(Game.WIDTH - 64, 0, 1024, Game.HEIGHT))
-        )
+        self.bottom_wall = self.__wall(0, Game.HEIGHT - 64, Game.WIDTH, 1024)
+        self.left_wall = self.__wall(64 - 1024, 0, 1024, Game.HEIGHT)
+        self.right_wall = self.__wall(Game.WIDTH - 64, 0, 1024, Game.HEIGHT)
+        self.platforms = [
+            self.__wall(64 * 2, 64 * 5, 128, 64),
+            self.__wall(64 * 7, 64 * 2, 128, 64),
+            self.__wall(64 * 8, 64 * 8, 256, 64),
+            self.__wall(64 * 5, 64 * 10, 128, 64),
+        ]
         self.collisions.register(
             self.player.wall_collide, self.player, self.bottom_wall
         )
+
+    def __wall(self, x, y, w, h):
+        return self.__add_instance(Wall(make_rect(x, y, w, h)))
 
     def __add_instance(self, instance: T) -> T:
         self.collisions.add(instance)

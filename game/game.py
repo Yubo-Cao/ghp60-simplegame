@@ -73,8 +73,9 @@ class Game:
         self.player = self.__add_instance(Player())
         self.player.rb.position = Vector2D(Game.WIDTH / 2, 0)
         self.bottom_wall = self.__wall(0, Game.HEIGHT - 64, Game.WIDTH, 1024)
-        self.left_wall = self.__wall(64 - 1024, 0, 1024, Game.HEIGHT)
-        self.right_wall = self.__wall(Game.WIDTH - 64, 0, 1024, Game.HEIGHT)
+        self.left_wall = self.__wall(64 - 1024, -1024, 1024, Game.HEIGHT + 1024)
+        self.right_wall = self.__wall(Game.WIDTH - 64, -1024, 1024, Game.HEIGHT + 1024)
+        self.top_wall = self.__wall(-256, -1024, Game.WIDTH, 1024)
         self.platforms = [
             self.__wall(64 * 2, 64 * 5, 128, 64),
             self.__wall(64 * 7, 64 * 2, 128, 64),

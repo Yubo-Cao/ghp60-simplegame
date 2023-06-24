@@ -110,13 +110,11 @@ class Player(pg.sprite.Sprite, PlayInstance):
 
     def wall_collide(self, collision: Collision):
         result = handle_collision(collision, self.rb)
+        print(result)
         if result.normal == Vector2D(0, 0):
             return
-        print(result.normal)
         if result.normal == Vector2D(0, -1):
             self.__update_state(Player.State.WALK_LEFT)
-        elif result.normal == Vector2D(0, 1):
-            self.__update_state(Player.State.WALK_RIGHT)
 
     def layer_collide(self, collision: Collision):
         assert isinstance(collision.b, BurgerLayer)

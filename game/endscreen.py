@@ -1,6 +1,6 @@
 import pygame as pg
 
-from .utils import text, HAlign, VAlign
+from .utils import HAlign, VAlign, text
 
 
 class EndScreen:

@@ -4,8 +4,13 @@ import pygame as pg
 
 from .burger import Burger, BurgerLayer
 from .command import RemoveInstanceCMD, issue_command
-from .interfaces import (Colliable, Collision, CollisionCallback,
-                         ObservableDescriptor, PlayInstance)
+from .interfaces import (
+    Colliable,
+    Collision,
+    CollisionCallback,
+    ObservableDescriptor,
+    PlayInstance,
+)
 from .monster import Monster
 from .physics import RigidBodyRect, Vector2D, handle_collision
 from .utils import Rect, load_im

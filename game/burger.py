@@ -6,8 +6,13 @@ import pygame as pg
 from game.interfaces.colliable import Colliable, CollisionCallback
 
 from .command import RemoveCallbackCMD, RemoveInstanceCMD, issue_command
-from .interfaces import (Colliable, Collision, CollisionCallback, PlayInstance,
-                         Renderable)
+from .interfaces import (
+    Colliable,
+    Collision,
+    CollisionCallback,
+    PlayInstance,
+    Renderable,
+)
 from .physics import RigidBodyRect, handle_collision
 from .utils import DATA_DIR, Number, Rect, Vector2D, load_im
 from .wall import Wall

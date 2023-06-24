@@ -8,8 +8,7 @@ import pygame as pg
 from .burger import LAYERS
 from .command import RemoveCallbackCMD, RemoveInstanceCMD, commands
 from .constants import FPS, HEIGHT, WIDTH
-from .interfaces import (CollisionHandler, PlayInstance, RenderHandler,
-                         UpdateHandler)
+from .interfaces import CollisionHandler, PlayInstance, RenderHandler, UpdateHandler
 from .monster import Monster
 from .player import Player
 from .utils import Vector2D, make_rect

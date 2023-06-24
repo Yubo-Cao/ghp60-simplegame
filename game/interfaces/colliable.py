@@ -4,12 +4,18 @@ from typing import NamedTuple, Protocol
 
 import pygame as pg
 
+from game.utils.ds import Vector2D
+
 from .updatable import Updatable
 
 
 class Colliable(Protocol):
     @abstractmethod
     def get_rect(self) -> pg.Rect:
+        ...
+
+    @abstractmethod
+    def get_velocity(self) -> "Vector2D":
         ...
 
     @abstractmethod

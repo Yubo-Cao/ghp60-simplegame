@@ -2,8 +2,7 @@ from typing import TypeVar
 
 import pygame as pg
 
-from .interfaces import (CollisionHandler, PlayInstance, RenderHandler,
-                         UpdateHandler)
+from .interfaces import CollisionHandler, PlayInstance, RenderHandler, UpdateHandler
 from .player import Player
 from .utils import load_im, make_rect
 from .wall import Wall

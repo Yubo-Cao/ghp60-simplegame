@@ -1,7 +1,7 @@
 import pygame as pg
 
 from .interfaces import PlayInstance
-from .utils import load_im
+from .utils import load_im, Vector2D
 
 
 class Wall(PlayInstance):
@@ -19,6 +19,9 @@ class Wall(PlayInstance):
 
     def get_rect(self) -> pg.Rect:
         return self.rect
+
+    def get_velocity(self) -> "Vector2D":
+        return Vector2D(0, 0)
 
     def collide(self, other: "Colliable") -> bool:
         return other.get_rect().colliderect(self.get_rect())

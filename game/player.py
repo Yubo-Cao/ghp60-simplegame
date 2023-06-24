@@ -2,10 +2,9 @@ from enum import Enum
 
 import pygame as pg
 
-from .interfaces import (Colliable, Collision, ObservableDescriptor,
-                         PlayInstance)
-from .rigidbody import RigidBodyRect
-from .utils import invert_vector, load_im, move_vector
+from .interfaces import Colliable, Collision, ObservableDescriptor, PlayInstance
+from .physics import RigidBodyRect, Vector2D, calculate_contact
+from .utils import load_im, Rect
 
 
 class Direction(Enum):
@@ -26,15 +25,19 @@ class Player(pg.sprite.Sprite, PlayInstance):
         DIVE = 2
 
     def __init__(
-            self,
-            speed: float = 64,
+        self,
+        speed: float = 64,
     ) -> None:
         super().__init__()
         self.image = load_im("player.png", scale=48 / 2048)
-        self.rect: pg.Rect = self.image.get_rect()
         self.speed = speed
         self.state: Player.State = Player.State.WALK
-        self.rb = RigidBodyRect(self.rect, mass=16, decaying=True, gravity=True)
+        self.rb = RigidBodyRect(
+            Rect.from_pygame(self.image.get_rect()),
+            mass=16,
+            decaying=True,
+            gravity=True,
+        )
 
     def update(self, dt: float):
         keys = pg.key.get_pressed()
@@ -43,31 +46,41 @@ class Player(pg.sprite.Sprite, PlayInstance):
                 self.__handle_move(keys)
                 if keys[pg.K_SPACE] or keys[pg.K_UP]:
                     self.state = Player.State.JUMP
-                    self.rb.apply_force((0, -self.speed * 10))
+                    self.rb.apply_force(Vector2D(0, -self.speed * 10))
             case Player.State.JUMP:
                 self.__handle_move(keys)
                 if self.rb.velocity[1] > 0:
                     self.state = Player.State.DIVE
                 if keys[pg.K_DOWN]:
                     self.state = Player.State.DIVE
-                    self.rb.apply_force((0, self.speed * 10))
+                    self.rb.apply_force(Vector2D(0, self.speed * 10))
         self.rb.update(dt)
 
     def render(self, surface: pg.Surface):
         # TODO: have different sprite for each state
-        surface.blit(self.image, self.rect)
+        surface.blit(self.image, self.rb.pg_rect)
 
     def wall_collide(self, collision: Collision):
-        vec = invert_vector(self.rb.velocity)
-        vec = move_vector(collision.a.get_rect(), collision.b.get_rect(), vec)
-        self.rb.x += vec[0]
-        self.rb.y += vec[1]
+        result = calculate_contact(
+            self.rb.rect,
+            collision.b.get_rect(),
+            self.rb.velocity,
+            collision.b.get_velocity(),
+        )
+        norm = result.plane
+        self.rb.velocity = self.rb.velocity.reflect(norm) * 0.5
+        self.rb.acceleration = self.rb.acceleration.reflect(norm) * 0.5
+        new_pos = self.rb.position + result.normal * result.penetration_depth
+        self.rb.position = new_pos
 
     def collide(self, other: "Colliable") -> bool:
-        return self.rect.colliderect(other.get_rect())
+        return self.rb.collide(other)
 
     def get_rect(self) -> pg.Rect:
-        return self.rect
+        return self.rb.get_rect()
+
+    def get_velocity(self) -> "Vector2D":
+        return self.rb.velocity
 
     def __handle_move(self, keys):
         if keys[pg.K_LEFT]:
@@ -77,13 +90,13 @@ class Player(pg.sprite.Sprite, PlayInstance):
 
     def __move(self, direction: Direction):
         if direction == Direction.LEFT:
-            self.rb.apply_force((-self.speed, 0))
+            self.rb.apply_force(Vector2D(-self.speed, 0))
         elif direction == Direction.RIGHT:
-            self.rb.apply_force((self.speed, 0))
+            self.rb.apply_force(Vector2D(self.speed, 0))
         elif direction == Direction.TOP:
-            self.rb.apply_force((0, -self.speed))
+            self.rb.apply_force(Vector2D(0, -self.speed))
         elif direction == Direction.BOTTOM:
-            self.rb.apply_force((0, self.speed))
+            self.rb.apply_force(Vector2D(0, self.speed))
 
     def __repr__(self):
         return f"Player({self.speed}, {self.state}, {self.rb})"

@@ -5,7 +5,7 @@ from .utils import load_im, Vector2D, Rect
 
 
 class Wall(PlayInstance):
-    TEXTURE = load_im("wall.png")
+    TEXTURE = load_im("wall.png", scale=64 / 60)
     WIDTH, HEIGHT = TEXTURE.get_size()
 
     def __init__(self, rect: pg.Rect) -> None:

@@ -30,51 +30,78 @@ class Player(pg.sprite.Sprite, PlayInstance):
 
     # player state
     class State(Enum):
-        WALK = 0
-        JUMP = 1
-        DIVE = 2
+        WALK_RIGHT = 0
+        WALK_LEFT = 1
+        JUMP = 2
+        DIVE = 3
 
     def __init__(
-        self,
-        speed: float = 128,
+            self,
+            speed: float = 128,
     ) -> None:
         super().__init__()
-        self.image = load_im("player.png")
         self.speed = speed
-        self.state: Player.State = Player.State.WALK
-        self.rb = RigidBodyRect(
-            Rect.from_pygame(self.image.get_rect()),
-            mass=8,
-            decaying=True,
-            gravity=True,
-        )
-        self.burger = Burger()
+        self.image = load_im("catwalk-1.png")
 
+        self.rb: RigidBodyRect
+        self.__update_state(Player.State.WALK_LEFT)
+
+        self.burger = Burger()
         self.health = 100
         self.score = 0
 
     def update(self, dt: float):
         keys = pg.key.get_pressed()
+
         match self.state:
-            case Player.State.WALK:
+            case Player.State.WALK_LEFT | Player.State.WALK_RIGHT:
                 self.__handle_move(keys)
+                if self.rb.velocity.x > 0:
+                    self.__update_state(Player.State.WALK_RIGHT)
+                elif self.rb.velocity.x < 0:
+                    self.__update_state(Player.State.WALK_LEFT)
                 if keys[pg.K_SPACE] or keys[pg.K_UP]:
-                    self.state = Player.State.JUMP
+                    self.__update_state(Player.State.JUMP)
                     self.rb.apply_force(Vector2D(0, -self.speed * self.rb.mass * 10))
             case Player.State.JUMP:
                 self.__handle_move(keys)
                 if self.rb.velocity[1] > 0:
-                    self.state = Player.State.DIVE
+                    self.__update_state(Player.State.DIVE)
                 if keys[pg.K_DOWN]:
-                    self.state = Player.State.DIVE
+                    self.__update_state(Player.State.DIVE)
                     self.rb.apply_force(Vector2D(0, self.speed * self.rb.mass * 10))
             case Player.State.DIVE:
                 self.__handle_move(keys)
+
         self.rb.update(dt)
         self.burger.move_to(
             self.rb.position
             + Vector2D((self.rb.rect.width - 48) / 2, self.rb.rect.height / 2)
         )
+
+    def __update_state(self, state: State):
+        if state == getattr(self, "state", None):
+            return
+        if state == Player.State.WALK_LEFT:
+            self.image = load_im("catwalk-1.png")
+        elif state == Player.State.WALK_RIGHT:
+            self.image = load_im("catwalk-2.png")
+        elif state == Player.State.JUMP:
+            self.image = load_im("catjump.png")
+        elif state == Player.State.DIVE:
+            self.image = load_im("catfall.png")
+
+        if getattr(self, "rb", None):
+            self.rb.rect = Rect.from_pygame(self.image.get_rect())
+        else:
+            self.rb = RigidBodyRect(
+                Rect.from_pygame(self.image.get_rect()),
+                mass=8,
+                decaying=True,
+                gravity=True,
+            )
+
+        self.state = state
 
     def render(self, surface: pg.Surface):
         # TODO: have different sprite for each state
@@ -85,8 +112,11 @@ class Player(pg.sprite.Sprite, PlayInstance):
         result = handle_collision(collision, self.rb)
         if result.normal == Vector2D(0, 0):
             return
+        print(result.normal)
         if result.normal == Vector2D(0, -1):
-            self.state = Player.State.WALK
+            self.__update_state(Player.State.WALK_LEFT)
+        elif result.normal == Vector2D(0, 1):
+            self.__update_state(Player.State.WALK_RIGHT)
 
     def layer_collide(self, collision: Collision):
         assert isinstance(collision.b, BurgerLayer)

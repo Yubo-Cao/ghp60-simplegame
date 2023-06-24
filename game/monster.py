@@ -2,12 +2,14 @@ from .wall import Wall
 from .utils import *
 from .physics import *
 from .interfaces import *
+import random
 
 
 class Monster(PlayInstance):
     def __init__(self):
         self.sprite = load_im("monster.png")
         self.rb = RigidBodyRect(Rect.from_pygame(self.sprite.get_rect()), mass=1)
+        self.rb.velocity = Vector2D(random.randint(-100, 100), random.randint(-10, 10))
 
     def get_rect(self) -> Rect:
         return self.rb.get_rect()
@@ -23,6 +25,7 @@ class Monster(PlayInstance):
 
     def render(self, surface: pg.Surface) -> None:
         surface.blit(self.sprite, self.get_rect().to_pygame())
+        self.rb.render(surface)
 
     def update(self, dt: float) -> None:
         self.rb.update(dt)

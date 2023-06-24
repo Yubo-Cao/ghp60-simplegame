@@ -5,6 +5,7 @@ import pygame as pg
 from game.interfaces import Colliable, CollisionCallback, Renderable, Updatable
 from game.utils.ds import Number, Rect, Vector2D
 
+DEBUG = False
 
 class RigidBody(Updatable):
     GRAVITY_CONSTANT = 9.81
@@ -51,6 +52,8 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
         self.rect = rect
 
     def render(self, surface: pg.Surface):
+        if not DEBUG:
+            return
         self.rect.draw(surface, (255, 0, 0))
         self.velocity.draw(surface, self.position, (0, 255, 0))
         self.acceleration.draw(surface, self.position, (0, 0, 255))

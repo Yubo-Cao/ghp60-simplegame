@@ -2,16 +2,14 @@ from abc import abstractmethod
 from collections.abc import Callable
 from typing import NamedTuple, Protocol
 
-import pygame as pg
-
-from game.utils.ds import Vector2D
-
+from game.utils import Vector2D, Rect
 from .updatable import Updatable
+from typeguard import typechecked
 
 
 class Colliable(Protocol):
     @abstractmethod
-    def get_rect(self) -> pg.Rect:
+    def get_rect(self) -> Rect:
         ...
 
     @abstractmethod

@@ -1,6 +1,5 @@
 from typing import Generic, TypeVar, overload
 
-import matplotlib.pyplot as plt
 import pygame as pg
 
 Number = float
@@ -36,7 +35,7 @@ class Vector2D(Generic[E]):
         return Vector2D(-self.x, -self.y)
 
     def __repr__(self) -> str:
-        return f"Vector2D({self.x}, {self.y})"
+        return f"<{self.x}, {self.y}>"
 
     def __len__(self) -> int:
         return 2
@@ -68,33 +67,27 @@ class Vector2D(Generic[E]):
             reflected_y = slope * reflected_x + y_intercept
             reflected_vector = (2 * reflected_x - x1, 2 * reflected_y - y1)
 
-        if not (
-            min(x1, reflected_vector[0]) <= x2 <= max(x1, reflected_vector[0])
-            and min(y1, reflected_vector[1]) <= y2 <= max(y1, reflected_vector[1])
-        ):
-            raise ValueError("Vectors do not intersect!")
-
         return Vector2D(*reflected_vector)
 
-    def draw_point(self, ax=None, **kwargs) -> None:
-        ax = ax or plt.gca()
-        ax.scatter(self[0], self[1], **dict(color="red", s=1) | kwargs)
+    def draw_point(self, surface: pg.Surface, color: tuple[int, int, int]) -> None:
+        pg.draw.circle(surface, color, (int(self.x), int(self.y)), 5)
 
-    def draw(self, pos: "Vector2D[E]", ax=None, **kwargs) -> None:
-        ax = ax or plt.gca()
-        ax.arrow(
-            pos[0],
-            pos[1],
-            self[0],
-            self[1],
-            **dict(
-                head_width=0.5,
-                head_length=0.5,
-                fc="slategray",
-                ec="slategray",
-            )
-            | kwargs,
+    def draw(
+        self,
+        surface: pg.Surface,
+        pos: "Vector2D[E]",
+        color: tuple[int, int, int],
+    ) -> None:
+        pg.draw.line(
+            surface,
+            color,
+            (int(pos.x), int(pos.y)),
+            (int(pos.x + self.x), int(pos.y + self.y)),
         )
+        pos.draw_point(surface, color)
+
+    def __eq__(self, other: "Vector2D[E]") -> bool:
+        return self.x == other.x and self.y == other.y
 
 
 class Rect:
@@ -103,6 +96,14 @@ class Rect:
         self.y = y
         self.w = w
         self.h = h
+
+    @property
+    def width(self) -> Number:
+        return self.w
+
+    @property
+    def height(self) -> Number:
+        return self.h
 
     @property
     def center(self) -> Vector2D:
@@ -147,20 +148,8 @@ class Rect:
         h = min(self.y + self.h, other.y + other.h) - y
         return Rect(x, y, w, h)
 
-    def draw(self, **kwargs) -> None:
-        plt.gca().add_patch(
-            plt.Rectangle(
-                (self.x, self.y),
-                self.w,
-                self.h,
-                **dict(
-                    linewidth=1,
-                    edgecolor="black",
-                    facecolor="none",
-                )
-                | kwargs,
-            )
-        )
+    def draw(self, surface: pg.Surface, color: tuple[int, int, int], **kwargs) -> None:
+        pg.draw.rect(surface, color, self.to_pygame(), width=1, **kwargs)
 
     def to_pygame(self) -> pg.Rect:
         return pg.Rect(self.x, self.y, self.w, self.h)
@@ -183,3 +172,6 @@ class Rect:
         x = self.x + x
         y = self.y + y  # type: ignore
         return Rect(x, y, self.w, self.h)
+
+    def __repr__(self):
+        return f"<Rect {self.x}, {self.y}, {self.w}, {self.h}>"

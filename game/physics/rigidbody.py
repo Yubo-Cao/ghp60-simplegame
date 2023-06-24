@@ -3,13 +3,12 @@ from typing import NamedTuple
 import pygame as pg
 
 from game.interfaces import Colliable, Renderable, Updatable
-
 from game.utils.ds import Rect, Vector2D
 
 
 class RigidBody(Updatable):
     GRAVITY_CONSTANT = 9.81
-    ACCELERATION_DECAY = 0.05
+    ACCELERATION_DECAY = 0.1
 
     def __init__(self, mass: float, decaying: bool = True, gravity: bool = True):
         self.mass = mass
@@ -20,22 +19,22 @@ class RigidBody(Updatable):
         self.gravity = gravity
 
     def apply_force(self, force: Vector2D):
-        self.acceleration = (
+        self.acceleration = Vector2D(
             self.acceleration[0] + force[0] / self.mass,
             self.acceleration[1] + force[1] / self.mass,
         )
 
     def update(self, dt: float):
-        self.position = (
+        self.position = Vector2D(
             self.position[0] + self.velocity[0] * dt,
             self.position[1] + self.velocity[1] * dt,
         )
-        self.velocity = (
+        self.velocity = Vector2D(
             self.velocity[0] + self.acceleration[0] * dt,
             self.velocity[1] + self.acceleration[1] * dt,
         )
         if self.decaying:
-            self.acceleration = (
+            self.acceleration = Vector2D(
                 self.acceleration[0] * (1 - self.ACCELERATION_DECAY),
                 self.acceleration[1] * (1 - self.ACCELERATION_DECAY),
             )
@@ -50,19 +49,27 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
     def __init__(self, rect: Rect, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.rect = rect
-        self.pg_rect = self.rect.to_pygame()
 
     def render(self, surface: pg.Surface):
-        pg.draw.rect(surface, (255, 0, 0), self.rect)
+        self.rect.draw(surface, (255, 0, 0))
+        self.velocity.draw(surface, self.position, (0, 255, 0))
+        self.acceleration.draw(surface, self.position, (0, 0, 255))
+        self.position.draw_point(surface, (0, 0, 0))
 
     def update(self, dt: float):
         super().update(dt)
+        self.rect = Rect(
+            self.position[0],
+            self.position[1],
+            self.rect.width,
+            self.rect.height,
+        )
 
     def collide(self, other: "Colliable") -> bool:
-        return self.pg_rect.colliderect(other.get_rect())
+        return self.rect.collide(other.get_rect())
 
-    def get_rect(self) -> pg.Rect:
-        return self.pg_rect
+    def get_rect(self) -> Rect:
+        return self.rect
 
     def get_velocity(self) -> "Vector2D":
         return self.velocity
@@ -73,8 +80,7 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
 
     @x.setter
     def x(self, value):
-        self.position = (value, self.position[1])
-        self.pg_rect.x = round(value)
+        self.position = Vector2D(value, self.position[1])
 
     @property
     def y(self):
@@ -82,8 +88,7 @@ class RigidBodyRect(RigidBody, Renderable, Colliable):
 
     @y.setter
     def y(self, value):
-        self.position = (self.position[0], value)
-        self.pg_rect.y = round(value)
+        self.position = Vector2D(self.position[0], value)
 
     def __repr__(self):
         return f"RigidBodyRect({self.rect}, {self.mass}g, {self.position}, {self.velocity}, {self.acceleration})"
@@ -97,19 +102,23 @@ class ContactResult(NamedTuple):
     time_of_contact: float
 
 
+ETA = 1e-6
+
+
+def prevent_zero(x: float) -> float:
+    return x if abs(x) > ETA else ETA if x > 0 else -ETA
+
+
 def calculate_contact(
-        a: Rect,
-        b: Rect,
-        v_a: Vector2D,
-        v_b: Vector2D,
+    a: Rect,
+    b: Rect,
+    v_a: Vector2D,
+    v_b: Vector2D,
 ) -> ContactResult:
-    try:
-        t_x_enter = (b.left - a.right) / (v_a[0] - v_b[0])
-        t_x_exit = (b.right - a.left) / (v_a[0] - v_b[0])
-        t_y_enter = (b.top - a.bottom) / (v_a[1] - v_b[1])
-        t_y_exit = (b.bottom - a.top) / (v_a[1] - v_b[1])
-    except ZeroDivisionError:
-        raise ValueError("No collision")
+    t_x_enter = (b.left - a.right) / prevent_zero(v_a[0] - v_b[0])
+    t_x_exit = (b.right - a.left) / prevent_zero(v_a[0] - v_b[0])
+    t_y_enter = (b.top - a.bottom) / prevent_zero(v_a[1] - v_b[1])
+    t_y_exit = (b.bottom - a.top) / prevent_zero(v_a[1] - v_b[1])
 
     t_contact = max(min(t_x_enter, t_x_exit), min(t_y_enter, t_y_exit))
     t_exit = min(max(t_x_enter, t_x_exit), max(t_y_enter, t_y_exit))
@@ -123,7 +132,6 @@ def calculate_contact(
         a.bottom - b.top,
         b.bottom - a.top,
     )
-
     a = a.move(v_a * t_contact)
     b = b.move(v_b * t_contact)
     xs = sorted([a.left, a.right, b.left, b.right])[1:3]
@@ -134,9 +142,5 @@ def calculate_contact(
         1 if contact[0] == a.left else -1 if contact[0] == a.right else 0,
         1 if contact[1] == a.top else -1 if contact[1] == a.bottom else 0,
     )
-    plane = Vector2D(
-        -normal[1],
-        normal[0],
-    )
-
+    plane = Vector2D(-normal[1], normal[0])
     return ContactResult(contact, normal, plane, penetration, t_contact)

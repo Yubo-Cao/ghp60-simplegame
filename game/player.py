@@ -34,7 +34,7 @@ class Player(pg.sprite.Sprite, PlayInstance):
         self.state: Player.State = Player.State.WALK
         self.rb = RigidBodyRect(
             Rect.from_pygame(self.image.get_rect()),
-            mass=16,
+            mass=8,
             decaying=True,
             gravity=True,
         )
@@ -46,30 +46,36 @@ class Player(pg.sprite.Sprite, PlayInstance):
                 self.__handle_move(keys)
                 if keys[pg.K_SPACE] or keys[pg.K_UP]:
                     self.state = Player.State.JUMP
-                    self.rb.apply_force(Vector2D(0, -self.speed * 10))
+                    self.rb.apply_force(Vector2D(0, -self.speed * self.rb.mass * 10))
             case Player.State.JUMP:
                 self.__handle_move(keys)
                 if self.rb.velocity[1] > 0:
                     self.state = Player.State.DIVE
                 if keys[pg.K_DOWN]:
                     self.state = Player.State.DIVE
-                    self.rb.apply_force(Vector2D(0, self.speed * 10))
+                    self.rb.apply_force(Vector2D(0, self.speed * self.rb.mass * 10))
+            case Player.State.DIVE:
+                self.__handle_move(keys)
         self.rb.update(dt)
 
     def render(self, surface: pg.Surface):
         # TODO: have different sprite for each state
-        surface.blit(self.image, self.rb.pg_rect)
+        self.rb.render(surface)
+        surface.blit(self.image, self.rb.rect.to_pygame())
 
     def wall_collide(self, collision: Collision):
         result = calculate_contact(
-            self.rb.rect,
+            self.rb.get_rect(),
             collision.b.get_rect(),
-            self.rb.velocity,
+            self.rb.get_velocity(),
             collision.b.get_velocity(),
         )
-        norm = result.plane
-        self.rb.velocity = self.rb.velocity.reflect(norm) * 0.5
-        self.rb.acceleration = self.rb.acceleration.reflect(norm) * 0.5
+        if result.normal == Vector2D(0, 0):
+            return
+        if result.normal == Vector2D(0, -1):
+            self.state = Player.State.WALK
+        self.rb.velocity = self.rb.velocity.reflect(result.plane) * 0.5
+        self.rb.acceleration = self.rb.acceleration.reflect(result.plane) * 0.5
         new_pos = self.rb.position + result.normal * result.penetration_depth
         self.rb.position = new_pos
 

@@ -1,15 +1,10 @@
-import sys
-
 import pygame
+from collections.abc import Callable
 
 
 class MainMenu:
-    def __init__(self):
-        # Initialize Pygame
-        pygame.init()
-
-        # Set up the window
-        self.screen_width, self.screen_height = 800, 600
+    def __init__(self, width: int, height: int, play_fn: Callable) -> None:
+        self.screen_width, self.screen_height = width, height
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Main Menu")
 
@@ -24,7 +19,8 @@ class MainMenu:
         )
 
         # Load font
-        self.font = pygame.font.Font(None, 50)
+        self.font = pygame.font.Font(None, 48)
+        self.play_fn = play_fn
 
     def main_menu(self):
         while True:
@@ -32,21 +28,19 @@ class MainMenu:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    sys.exit()
+                    exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
-                        sys.exit()
+                        exit()
                     elif event.key == pygame.K_p:  # 'p' key to play
-                        # Call the game screen
-                        self.play_game()  # Start the game
+                        self.play_fn()  # Start the game
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if 300 <= event.pos[0] <= 500 and 250 <= event.pos[1] <= 300:
-                        # Call the game screen
-                        self.play_game()  # Start the game
+                        self.play_fn()  # Start the game
                     elif 300 <= event.pos[0] <= 500 and 350 <= event.pos[1] <= 400:
                         pygame.quit()
-                        sys.exit()
+                        exit()
 
             # Draw the background image
             self.screen.blit(self.background_image, (0, 0))
@@ -66,27 +60,3 @@ class MainMenu:
 
             # Update the display
             pygame.display.update()
-
-    def play_game(self):
-        # This method represents the game screen
-        while True:
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                        sys.exit()
-
-            # THIS LINE SHOULD SWITCH SCREEN TO THE GAME - SORT OF LIKE AN ACTIVATION
-            self.screen.fill(self.BLACK)
-
-            # Update the display
-            pygame.display.update()
-
-
-if __name__ == "__main__":
-    menu = MainMenu()
-    menu.main_menu()

@@ -91,6 +91,8 @@ class Burger(Renderable, Colliable):
         self.__arrange_layers(pos.x, pos.y)
 
     def add_layer(self, layer: BurgerLayer) -> None:
+        if layer in self.layers:
+            return
         layer.rb.gravity = False
         self.layers.append(layer)
         issue_command(RemoveCallbackCMD(layer.wall_collide, layer, Wall))
@@ -112,8 +114,9 @@ class Burger(Renderable, Colliable):
     def __arrange_layers(self, x: Number, y: Number) -> None:
         h = 0
         for layer in self.layers:
-            layer.pos = Vector2D[Number](x, y - h - 10)
+            layer.pos = Vector2D[Number](x, y - h)
             h += layer.sprite.get_height()
+        self.rect = Rect(x, y - h, self.rect.w, h)
 
     def layer_collide(self, collision: Collision) -> None:
         assert isinstance(collision.b, BurgerLayer)

@@ -3,7 +3,7 @@ from enum import Enum
 import pygame as pg
 
 from .burger import Burger, BurgerLayer
-from .command import RemoveInstanceCMD, issue_command
+from .command import RemoveInstanceCMD, AddInstanceCMD, issue_command
 from .interfaces import (
     Colliable,
     Collision,
@@ -12,16 +12,10 @@ from .interfaces import (
     PlayInstance,
 )
 from .monster import Monster
-from .physics import RigidBodyRect, Vector2D, handle_collision
+from .particle import ExplosionEffect
+from .physics import RigidBodyRect, Vector2D, handle_collision, calculate_collision
 from .utils import Rect, load_im
 from .wall import Wall
-
-
-class Direction(Enum):
-    LEFT = 0
-    RIGHT = 1
-    BOTTOM = 2
-    TOP = 3
 
 
 class Player(pg.sprite.Sprite, PlayInstance):
@@ -36,8 +30,8 @@ class Player(pg.sprite.Sprite, PlayInstance):
         DIVE = 3
 
     def __init__(
-        self,
-        speed: float = 128,
+            self,
+            speed: float = 128,
     ) -> None:
         super().__init__()
         self.speed = speed
@@ -122,6 +116,8 @@ class Player(pg.sprite.Sprite, PlayInstance):
 
     def monster_collide(self, collision: Collision):
         assert isinstance(collision.b, Monster)
+        result = calculate_collision(collision, self.rb)
+        issue_command(AddInstanceCMD(ExplosionEffect(result.point, (255, 0, 0))))  # red explosion
         self.health -= 10
         issue_command(RemoveInstanceCMD(collision.b))
 
@@ -143,19 +139,9 @@ class Player(pg.sprite.Sprite, PlayInstance):
 
     def __handle_move(self, keys):
         if keys[pg.K_LEFT]:
-            self.__move(Direction.LEFT)
-        if keys[pg.K_RIGHT]:
-            self.__move(Direction.RIGHT)
-
-    def __move(self, direction: Direction):
-        if direction == Direction.LEFT:
-            self.rb.apply_force(Vector2D(-self.speed, 0))
-        elif direction == Direction.RIGHT:
-            self.rb.apply_force(Vector2D(self.speed, 0))
-        elif direction == Direction.TOP:
-            self.rb.apply_force(Vector2D(0, -self.speed))
-        elif direction == Direction.BOTTOM:
-            self.rb.apply_force(Vector2D(0, self.speed))
+            self.rb.velocity.x = -self.speed
+        elif keys[pg.K_RIGHT]:
+            self.rb.velocity.x = self.speed
 
     def __repr__(self):
         return f"Player({self.speed}, {self.state}, {self.rb})"

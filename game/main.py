@@ -10,7 +10,7 @@ from .utils import load_im
 def main():
     pg.init()
 
-    surface = pg.display.set_mode(SIZE)
+    surface = pg.display.set_mode(SIZE, pg.SRCALPHA)
     pg.display.set_caption(TITLE)
     pg.display.set_icon(load_im("icon.png"))
 

@@ -6,9 +6,9 @@ from typing import TypeVar
 import pygame as pg
 
 from .burger import LAYERS
-from .command import RemoveCallbackCMD, RemoveInstanceCMD, commands
+from .command import RemoveCallbackCMD, RemoveInstanceCMD, commands, AddInstanceCMD
 from .constants import FPS, HEIGHT, WIDTH
-from .interfaces import CollisionHandler, PlayInstance, RenderHandler, UpdateHandler
+from .interfaces import CollisionHandler, PlayInstance, RenderHandler, UpdateHandler, Updatable, Renderable, Colliable
 from .monster import Monster
 from .player import Player
 from .utils import Vector2D, make_rect
@@ -99,6 +99,8 @@ class Game:
                     self.__remove_instance(cmd.instance)
                 case RemoveCallbackCMD():
                     self.collisions.unregister(cmd.callback, cmd.instance, cmd.type)
+                case AddInstanceCMD():
+                    self.__add_instance(cmd.instance)
                 case _:
                     raise ValueError(f"Unknown command {cmd}")
         commands.clear()
@@ -161,17 +163,23 @@ class Game:
         return result
 
     def __add_instance(self, instance: T) -> T:
-        self.collisions.add(instance)
-        self.renders.add(instance)
-        self.updates.add(instance)
-        for cb, type in instance.get_callbacks():
-            self.collisions.register(cb, instance, type)
+        if isinstance(instance, Colliable):
+            self.collisions.add(instance)
+            for cb, type in instance.get_callbacks():
+                self.collisions.register(cb, instance, type)
+        if isinstance(instance, Renderable):
+            self.renders.add(instance)
+        if isinstance(instance, Updatable):
+            self.updates.add(instance)
         return instance
 
     def __remove_instance(self, instance: T) -> T:
-        self.collisions.remove(instance)
-        self.renders.remove(instance)
-        self.updates.remove(instance)
-        for cb, type in instance.get_callbacks():
-            self.collisions.unregister(cb, instance, type)
+        if isinstance(instance, Colliable):
+            self.collisions.remove(instance)
+            for cb, type in instance.get_callbacks():
+                self.collisions.unregister(cb, instance, type)
+        if isinstance(instance, Renderable):
+            self.renders.remove(instance)
+        if isinstance(instance, Updatable):
+            self.updates.remove(instance)
         return instance

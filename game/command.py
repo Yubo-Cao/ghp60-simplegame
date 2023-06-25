@@ -1,3 +1,6 @@
+from .interfaces import Renderable
+
+
 class Command:
     """Command class for all commands"""
 
@@ -17,6 +20,12 @@ class RemoveCallbackCMD(Command):
         self.instance = instance
         self.type = type
 
+
+class AddInstanceCMD(Command):
+    """Command for adding an instance"""
+
+    def __init__(self, instance):
+        self.instance = instance
 
 commands: list[Command] = []
 

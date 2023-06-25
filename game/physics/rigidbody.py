@@ -5,7 +5,7 @@ import pygame as pg
 from game.interfaces import Colliable, CollisionCallback, Renderable, Updatable
 from game.utils.ds import Number, Rect, Vector2D
 
-DEBUG = True
+DEBUG = False
 
 
 class RigidBody(Updatable):

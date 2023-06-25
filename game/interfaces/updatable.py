@@ -1,7 +1,8 @@
 from abc import abstractmethod
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 
+@runtime_checkable
 class Updatable(Protocol):
     @abstractmethod
     def update(self, dt: float) -> None:

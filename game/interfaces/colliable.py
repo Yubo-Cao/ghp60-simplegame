@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections.abc import Callable
-from typing import NamedTuple, Protocol
+from typing import NamedTuple, Protocol, runtime_checkable
 
 from game.utils import Rect, Vector2D
 
@@ -14,7 +14,7 @@ class Collision(NamedTuple):
 
 CollisionCallback = Callable[[Collision], None]
 
-
+@runtime_checkable
 class Colliable(Protocol):
     @abstractmethod
     def get_rect(self) -> Rect:

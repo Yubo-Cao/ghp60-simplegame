@@ -1,6 +1,7 @@
 from typing import Generic, TypeVar, overload
 
 import pygame as pg
+import random
 
 Number = float
 E = TypeVar("E", bound=Number)
@@ -11,16 +12,24 @@ class Vector2D(Generic[E]):
         self.x = x
         self.y = y
 
-    def __add__(self, other: "Vector2D[E]") -> "Vector2D[E]":
-        return Vector2D(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other: "Vector2D[E]") -> "Vector2D[E]":
-        return Vector2D(self.x - other.x, self.y - other.y)
+    def __add__(self, other: E | "Vector2D[E]") -> "Vector2D[E]":
+        if isinstance(other, Vector2D):
+            return Vector2D(self.x + other.x, self.y + other.y)
+        return Vector2D(self.x + other, self.y + other)
+    def __sub__(self, other: E | "Vector2D[E]") -> "Vector2D[E]":
+        if isinstance(other, Vector2D):
+            return Vector2D(self.x - other.x, self.y - other.y)
+        return Vector2D(self.x - other, self.y - other)
 
     def __mul__(self, other: E | "Vector2D[E]") -> "Vector2D[E]":
         if isinstance(other, Vector2D):
             return Vector2D(self.x * other.x, self.y * other.y)
         return Vector2D(self.x * other, self.y * other)
+
+    def __div__(self, other: E | "Vector2D[E]") -> "Vector2D[E]":
+        if isinstance(other, Vector2D):
+            return Vector2D(self.x / other.x, self.y / other.y)
+        return Vector2D(self.x / other, self.y / other)
 
     def __matmul__(self, other: "Vector2D[E]") -> E:
         return self.x * other.x + self.y * other.y  # type: ignore
@@ -85,6 +94,10 @@ class Vector2D(Generic[E]):
             (int(pos.x + self.x), int(pos.y + self.y)),
         )
         pos.draw_point(surface, color)
+
+    @staticmethod
+    def random() -> "Vector2D[E]":
+        return Vector2D(random.random(), random.random())
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y

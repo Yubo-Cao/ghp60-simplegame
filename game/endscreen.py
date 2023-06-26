@@ -1,5 +1,6 @@
 import pygame as pg
 
+from .constants import ICON
 from .utils import HAlign, VAlign, text
 
 
@@ -15,6 +16,8 @@ class EndScreen:
     def loop(self):
         while True:
             self.surface.fill((0, 0, 0))
+            w, h = ICON.get_size()
+            self.surface.blit(ICON, (self.cx - w // 2, self.cy - h))
             text(
                 self.surface,
                 self.title,

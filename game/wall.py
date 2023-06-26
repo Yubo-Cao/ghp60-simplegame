@@ -8,10 +8,11 @@ class Wall(PlayInstance):
     TEXTURE = load_im("wall.jpg", scale=48 / 60)
     WIDTH, HEIGHT = TEXTURE.get_size()
 
-    def __init__(self, rect: pg.Rect) -> None:
+    def __init__(self, rect: pg.Rect, sticy: bool = False) -> None:
         self.pg_rect = rect
         self.surface = pg.Surface(rect.size)
         self.surface.fill((0, 0, 0))
+        self.sticky = sticy
 
         for x in range(0, rect.width, Wall.WIDTH):
             for y in range(0, rect.height, Wall.HEIGHT):
@@ -31,6 +32,9 @@ class Wall(PlayInstance):
 
     def render(self, surface: pg.Surface) -> None:
         surface.blit(self.surface, self.pg_rect)
+        if self.sticky:
+            pg.draw.rect(surface, (0, 255, 0), (self.pg_rect.x, self.pg_rect.y, 2, self.pg_rect.height))
+            pg.draw.rect(surface, (0, 255, 0), (self.pg_rect.x + self.pg_rect.width - 2, self.pg_rect.y, 2, self.pg_rect.height))
 
     def update(self, dt: float) -> None:
         """Wall does not move, so no need to update it."""

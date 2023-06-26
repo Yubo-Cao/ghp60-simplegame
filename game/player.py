@@ -56,14 +56,14 @@ class Player(pg.sprite.Sprite, PlayInstance):
                     self.__update_state(Player.State.WALK_LEFT)
                 if keys[pg.K_SPACE] or keys[pg.K_UP]:
                     self.__update_state(Player.State.JUMP)
-                    self.rb.apply_force(Vector2D(0, -self.speed * self.rb.mass * 5))
+                    self.rb.apply_force(Vector2D(0, -self.speed * self.rb.mass * 7))
             case Player.State.JUMP:
                 self.__handle_move(keys)
                 if self.rb.velocity[1] > 0:
                     self.__update_state(Player.State.DIVE)
                 if keys[pg.K_DOWN]:
                     self.__update_state(Player.State.DIVE)
-                    self.rb.apply_force(Vector2D(0, self.speed * self.rb.mass * 5))
+                    self.rb.apply_force(Vector2D(0, self.speed * self.rb.mass * 7))
             case Player.State.DIVE:
                 self.__handle_move(keys)
 
@@ -98,7 +98,6 @@ class Player(pg.sprite.Sprite, PlayInstance):
         self.state = state
 
     def render(self, surface: pg.Surface):
-        # TODO: have different sprite for each state
         self.rb.render(surface)
         surface.blit(self.image, self.rb.rect.to_pygame())
 

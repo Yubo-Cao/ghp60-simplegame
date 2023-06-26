@@ -64,7 +64,7 @@ class Game:
     def __handle_end_game(self):
         if self.tick >= self.GAME_TIME:
             if self.player.score >= 100:
-                self.end_game("You win!", self.player.score, "You got 100 points!")
+                self.end_game("You win!", self.player.score, "You got more than 100 points!")
             elif self.player.score == 0:
                 self.end_game("You lose!", self.player.score, "You scored nothing!")
             else:
@@ -155,10 +155,10 @@ class Game:
         self.__grid_wall(12, 4, 6, 1)
 
     def __grid_wall(self, x, y, w, h):
-        return self.__wall(x * Game.GRID_SIZE, y * Game.GRID_SIZE, w * Game.GRID_SIZE, h * Game.GRID_SIZE)
+        return self.__wall(x * Game.GRID_SIZE, y * Game.GRID_SIZE, w * Game.GRID_SIZE, h * Game.GRID_SIZE, True)
 
-    def __wall(self, x, y, w, h):
-        result = self.__add_instance(Wall(make_rect(x, y, w, h)))
+    def __wall(self, x, y, w, h, sticky=False):
+        result = self.__add_instance(Wall(make_rect(x, y, w, h), sticky))
         self.walls.append(result)
         return result
 

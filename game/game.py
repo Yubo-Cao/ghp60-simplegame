@@ -1,5 +1,6 @@
 import random
 from collections.abc import Callable
+from contextlib import suppress
 from logging import getLogger
 from typing import TypeVar
 
@@ -96,11 +97,14 @@ class Game:
         for cmd in commands:
             match cmd:
                 case RemoveInstanceCMD():
-                    self.__remove_instance(cmd.instance)
+                    with suppress(ValueError):
+                        self.__remove_instance(cmd.instance)
                 case RemoveCallbackCMD():
-                    self.collisions.unregister(cmd.callback, cmd.instance, cmd.type)
+                    with suppress(ValueError):
+                        self.collisions.unregister(cmd.callback, cmd.instance, cmd.type)
                 case AddInstanceCMD():
-                    self.__add_instance(cmd.instance)
+                    with suppress(ValueError):
+                        self.__add_instance(cmd.instance)
                 case _:
                     raise ValueError(f"Unknown command {cmd}")
         commands.clear()
@@ -120,15 +124,15 @@ class Game:
                 )
                 y = random.randint(0, HEIGHT)
                 if any(
-                    wall.get_rect().collide(
-                        make_rect(
-                            x,
-                            y,
-                            monster.rb.rect.width,
-                            monster.rb.rect.height,
+                        wall.get_rect().collide(
+                            make_rect(
+                                x,
+                                y,
+                                monster.rb.rect.width,
+                                monster.rb.rect.height,
+                            )
                         )
-                    )
-                    for wall in self.walls
+                        for wall in self.walls
                 ):
                     continue
                 break
@@ -144,18 +148,14 @@ class Game:
             WIDTH - Game.GRID_SIZE, -1024, 1024, HEIGHT + 1024
         )
         self.top_wall = self.__wall(-256, -1024, WIDTH, 1024)
-        self.__wall(
-            Game.GRID_SIZE * 2, Game.GRID_SIZE * 5, Game.GRID_SIZE * 2, Game.GRID_SIZE
-        ),
-        self.__wall(
-            Game.GRID_SIZE * 7, Game.GRID_SIZE * 2, Game.GRID_SIZE * 2, Game.GRID_SIZE
-        ),
-        self.__wall(
-            Game.GRID_SIZE * 8, Game.GRID_SIZE * 8, Game.GRID_SIZE * 4, Game.GRID_SIZE
-        ),
-        self.__wall(
-            Game.GRID_SIZE * 5, Game.GRID_SIZE * 10, Game.GRID_SIZE * 3, Game.GRID_SIZE
-        ),
+
+        self.__grid_wall(2, 12, 8, 1)
+        self.__grid_wall(16, 10, 4, 1)
+        self.__grid_wall(8, 8, 5, 1)
+        self.__grid_wall(12, 4, 6, 1)
+
+    def __grid_wall(self, x, y, w, h):
+        return self.__wall(x * Game.GRID_SIZE, y * Game.GRID_SIZE, w * Game.GRID_SIZE, h * Game.GRID_SIZE)
 
     def __wall(self, x, y, w, h):
         result = self.__add_instance(Wall(make_rect(x, y, w, h)))

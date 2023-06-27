@@ -20,6 +20,7 @@ from .wall import Wall
 
 class BurgerLayer(PlayInstance):
     def __init__(self, sprite: pg.Surface, name: str) -> None:
+        self.dt = 0
         self.sprite = sprite
         self.name = name
         self.width = sprite.get_width()
@@ -53,10 +54,11 @@ class BurgerLayer(PlayInstance):
 
     def update(self, dt: float) -> None:
         self.rb.update(dt)
+        self.dt = dt
 
     def wall_collide(self, collision: Collision):
-        with suppress(Exception):  # TODO: fix this
-            handle_collision(collision, self.rb)
+        with suppress(Exception):
+            handle_collision(collision, self.rb, self.dt)
         issue_command(RemoveInstanceCMD(self))
 
     def __repr__(self) -> str:

@@ -1,7 +1,7 @@
+import random
 from typing import Generic, TypeVar, overload
 
 import pygame as pg
-import random
 
 Number = float
 E = TypeVar("E", bound=Number)
@@ -16,6 +16,7 @@ class Vector2D(Generic[E]):
         if isinstance(other, Vector2D):
             return Vector2D(self.x + other.x, self.y + other.y)
         return Vector2D(self.x + other, self.y + other)
+
     def __sub__(self, other: E | "Vector2D[E]") -> "Vector2D[E]":
         if isinstance(other, Vector2D):
             return Vector2D(self.x - other.x, self.y - other.y)

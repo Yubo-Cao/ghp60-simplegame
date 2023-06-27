@@ -1,5 +1,3 @@
-import random
-
 from .interfaces import *
 from .physics import *
 from .utils import *
@@ -11,6 +9,7 @@ class Monster(PlayInstance):
         self.sprite = load_im("monster.png")
         self.rb = RigidBodyRect(Rect.from_pygame(self.sprite.get_rect()), mass=1)
         self.rb.velocity = Vector2D(random.randint(-100, 100), random.randint(-10, 10))
+        self.dt = 0
 
     def get_rect(self) -> Rect:
         return self.rb.get_rect()
@@ -30,6 +29,7 @@ class Monster(PlayInstance):
 
     def update(self, dt: float) -> None:
         self.rb.update(dt)
+        self.dt = dt
 
     def wall_collide(self, collision: Collision) -> None:
-        handle_collision(collision, self.rb)
+        handle_collision(collision, self.rb, self.dt)

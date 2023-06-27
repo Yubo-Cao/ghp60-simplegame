@@ -3,6 +3,7 @@ from typing import Protocol, runtime_checkable
 
 import pygame as pg
 
+
 @runtime_checkable
 class Renderable(Protocol):
     @abstractmethod

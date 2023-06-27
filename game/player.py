@@ -3,7 +3,7 @@ from enum import Enum
 import pygame as pg
 
 from .burger import Burger, BurgerLayer
-from .command import RemoveInstanceCMD, AddInstanceCMD, issue_command
+from .command import AddInstanceCMD, RemoveInstanceCMD, issue_command
 from .interfaces import (
     Colliable,
     Collision,
@@ -13,7 +13,7 @@ from .interfaces import (
 )
 from .monster import Monster
 from .particle import ExplosionEffect
-from .physics import RigidBodyRect, Vector2D, handle_collision, calculate_collision
+from .physics import RigidBodyRect, Vector2D, calculate_collision, handle_collision
 from .utils import Rect, load_im
 from .wall import Wall
 
@@ -30,8 +30,8 @@ class Player(pg.sprite.Sprite, PlayInstance):
         DIVE = 3
 
     def __init__(
-            self,
-            speed: float = 128,
+        self,
+        speed: float = 128,
     ) -> None:
         super().__init__()
         self.speed = speed
@@ -43,6 +43,8 @@ class Player(pg.sprite.Sprite, PlayInstance):
         self.burger = Burger()
         self.health = 100
         self.score = 0
+
+        self.dt = 0
 
     def update(self, dt: float):
         keys = pg.key.get_pressed()
@@ -72,6 +74,7 @@ class Player(pg.sprite.Sprite, PlayInstance):
             self.rb.position
             + Vector2D((self.rb.rect.width - 48) / 2, self.rb.rect.height / 2)
         )
+        self.dt = dt
 
     def __update_state(self, state: State):
         if state == getattr(self, "state", None):
@@ -102,7 +105,7 @@ class Player(pg.sprite.Sprite, PlayInstance):
         surface.blit(self.image, self.rb.rect.to_pygame())
 
     def wall_collide(self, collision: Collision):
-        result = handle_collision(collision, self.rb)
+        result = handle_collision(collision, self.rb, self.dt)
         if result.normal == Vector2D(0, 0):
             return
         if result.normal == Vector2D(0, -1):
@@ -116,7 +119,9 @@ class Player(pg.sprite.Sprite, PlayInstance):
     def monster_collide(self, collision: Collision):
         assert isinstance(collision.b, Monster)
         result = calculate_collision(collision, self.rb)
-        issue_command(AddInstanceCMD(ExplosionEffect(result.point, (255, 0, 0))))  # red explosion
+        issue_command(
+            AddInstanceCMD(ExplosionEffect(result.point, (255, 0, 0)))
+        )  # red explosion
         self.health -= 10
         issue_command(RemoveInstanceCMD(collision.b))
 

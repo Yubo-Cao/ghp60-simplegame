@@ -14,6 +14,7 @@ class Collision(NamedTuple):
 
 CollisionCallback = Callable[[Collision], None]
 
+
 @runtime_checkable
 class Colliable(Protocol):
     @abstractmethod

@@ -33,8 +33,21 @@ class Wall(PlayInstance):
     def render(self, surface: pg.Surface) -> None:
         surface.blit(self.surface, self.pg_rect)
         if self.sticky:
-            pg.draw.rect(surface, (0, 255, 0), (self.pg_rect.x, self.pg_rect.y, 2, self.pg_rect.height))
-            pg.draw.rect(surface, (0, 255, 0), (self.pg_rect.x + self.pg_rect.width - 2, self.pg_rect.y, 2, self.pg_rect.height))
+            pg.draw.rect(
+                surface,
+                (0, 255, 0),
+                (self.pg_rect.x, self.pg_rect.y, 2, self.pg_rect.height),
+            )
+            pg.draw.rect(
+                surface,
+                (0, 255, 0),
+                (
+                    self.pg_rect.x + self.pg_rect.width - 2,
+                    self.pg_rect.y,
+                    2,
+                    self.pg_rect.height,
+                ),
+            )
 
     def update(self, dt: float) -> None:
         """Wall does not move, so no need to update it."""

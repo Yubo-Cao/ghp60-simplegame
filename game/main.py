@@ -1,6 +1,6 @@
 import pygame as pg
 
-from .constants import SIZE, TITLE, ICON
+from .constants import ICON, SIZE, TITLE
 from .endscreen import EndScreen
 from .game import Game
 from .menu import MainMenu

@@ -7,9 +7,17 @@ from typing import TypeVar
 import pygame as pg
 
 from .burger import LAYERS
-from .command import RemoveCallbackCMD, RemoveInstanceCMD, commands, AddInstanceCMD
+from .command import AddInstanceCMD, RemoveCallbackCMD, RemoveInstanceCMD, commands
 from .constants import FPS, HEIGHT, WIDTH
-from .interfaces import CollisionHandler, PlayInstance, RenderHandler, UpdateHandler, Updatable, Renderable, Colliable
+from .interfaces import (
+    Colliable,
+    CollisionHandler,
+    PlayInstance,
+    Renderable,
+    RenderHandler,
+    Updatable,
+    UpdateHandler,
+)
 from .monster import Monster
 from .player import Player
 from .utils import Vector2D, make_rect
@@ -48,8 +56,8 @@ class Game:
             self.__spawn_monster()
             self.__handle_cmd()
             self.__render_player_status()
-            self.__handle_end_game()
             pg.display.flip()
+            self.__handle_end_game()
 
     def __enter__(self):
         self.clock = pg.time.Clock()
@@ -64,7 +72,9 @@ class Game:
     def __handle_end_game(self):
         if self.tick >= self.GAME_TIME:
             if self.player.score >= 100:
-                self.end_game("You win!", self.player.score, "You got more than 100 points!")
+                self.end_game(
+                    "You win!", self.player.score, "You got more than 100 points!"
+                )
             elif self.player.score == 0:
                 self.end_game("You lose!", self.player.score, "You scored nothing!")
             else:
@@ -124,15 +134,15 @@ class Game:
                 )
                 y = random.randint(0, HEIGHT)
                 if any(
-                        wall.get_rect().collide(
-                            make_rect(
-                                x,
-                                y,
-                                monster.rb.rect.width,
-                                monster.rb.rect.height,
-                            )
+                    wall.get_rect().collide(
+                        make_rect(
+                            x,
+                            y,
+                            monster.rb.rect.width,
+                            monster.rb.rect.height,
                         )
-                        for wall in self.walls
+                    )
+                    for wall in self.walls
                 ):
                     continue
                 break
@@ -155,7 +165,13 @@ class Game:
         self.__grid_wall(12, 4, 6, 1)
 
     def __grid_wall(self, x, y, w, h):
-        return self.__wall(x * Game.GRID_SIZE, y * Game.GRID_SIZE, w * Game.GRID_SIZE, h * Game.GRID_SIZE, True)
+        return self.__wall(
+            x * Game.GRID_SIZE,
+            y * Game.GRID_SIZE,
+            w * Game.GRID_SIZE,
+            h * Game.GRID_SIZE,
+            True,
+        )
 
     def __wall(self, x, y, w, h, sticky=False):
         result = self.__add_instance(Wall(make_rect(x, y, w, h), sticky))

@@ -2,9 +2,9 @@ from abc import ABC
 
 import pygame as pg
 
-from .command import issue_command, RemoveInstanceCMD
+from .command import RemoveInstanceCMD, issue_command
 from .interfaces import Renderable, Updatable
-from .utils import Vector2D, Number
+from .utils import Number, Vector2D
 
 
 class Particle(Renderable, Updatable, ABC):
@@ -69,7 +69,7 @@ class ExplosionEffect(Particle):
                 color,
                 2,
                 lifetime,
-                False
+                False,
             )
             for _ in range(n)
         ]

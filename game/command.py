@@ -27,6 +27,7 @@ class AddInstanceCMD(Command):
     def __init__(self, instance):
         self.instance = instance
 
+
 commands: list[Command] = []
 
 

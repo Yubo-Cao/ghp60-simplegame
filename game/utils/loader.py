@@ -33,6 +33,7 @@ def load_im(
     CACHE[str(path)] = image
     return image
 
+
 def load_audio(path: str | Path) -> pg.mixer.Sound:
     path = (DATA_DIR / path).resolve()
     assert path.exists(), f"File {path} does not exist"

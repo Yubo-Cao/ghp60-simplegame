@@ -32,3 +32,8 @@ def load_im(
     image.set_colorkey(color_key)
     CACHE[str(path)] = image
     return image
+
+def load_audio(path: str | Path) -> pg.mixer.Sound:
+    path = (DATA_DIR / path).resolve()
+    assert path.exists(), f"File {path} does not exist"
+    return pg.mixer.Sound(str(path))

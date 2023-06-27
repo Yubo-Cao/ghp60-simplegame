@@ -20,7 +20,7 @@ from .interfaces import (
 )
 from .monster import Monster
 from .player import Player
-from .utils import Vector2D, make_rect
+from .utils import Vector2D, make_rect, load_audio
 from .wall import Wall
 
 T = TypeVar("T", bound=PlayInstance)
@@ -45,6 +45,9 @@ class Game:
         self.walls: list[Wall] = []
         self.__init_scene()
         self.tick = 0
+
+        self.bgm = load_audio("bgm.mp3")
+        self.bgm.play(-1)
 
     def loop(self):
         while True:
